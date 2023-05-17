@@ -1,7 +1,125 @@
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  font-family: arial;
 }
 
+body {
+  background-color: #050505;
+  font-size: clamp(.5rem, 2.5vmin, 1.5rem);
+  color: #ddd;
+  margin: 0;
+}
 
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  padding: 1em;
+  align-items: center;
+}
+
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(auto, 1.25em));
+  grid-auto-rows: 3.25em;
+  gap: .25em;
+}
+
+.key {
+  font-size: inherit;
+  grid-column: span 2;
+  border: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: hsl(
+    var(--hue, 0)
+    var(--saturation, 0%)
+    calc(var(--lightness-offset, 0%) + var(--lightness, 50%))
+  );
+  color: inherit;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: .25em;
+  user-select: none;
+  cursor: pointer;
+}
+
+[data-value="enter"],
+[data-value="delete"] {
+  grid-column: span 3;
+}
+
+/* shift middle row right by half a key */
+[data-value="a"] {
+  grid-column: 2 / span 2;
+}
+
+.key > svg {
+  width: 1.75em;
+  height: 1.75em;
+}
+
+.key:hover,
+.key:focus-visible {
+  --lightness-offset: 10%;
+}
+
+.key[data-key-status="wrong"] {
+  --lightness: 20%;
+}
+
+.key[data-key-status="wrong-position"] {
+  --hue: 50;
+  --saturation: 50%;
+  --lightness: 45%; 
+}
+
+.key[data-key-status="correct"] {
+  --hue: 110;
+  --saturation: 30%;
+  --lightness: 40%;
+}
+
+.board {
+  flex-grow: 1;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  grid-template-columns: repeat(5, 4em);
+  grid-template-rows: repeat(6, 4em);
+  gap: .25em;
+  margin-bottom: 1em;
+}
+
+.tile {
+  font-size: 2em;
+  border: .05em solid #393939;
+  text-transform: uppercase;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.tile[data-tile-status="active"] {
+  border-color: #606060;
+}
+
+.tile[data-tile-status="wrong"] {
+  border: none;
+  background-color: hsl(0 0% 20%);
+}
+
+.tile[data-tile-status="wrong-position"] {
+  border: none;
+  background-color: hsl(50 50% 45%);
+}
+
+.tile[data-tile-status="correct"] {
+  border: none;
+  background-color: hsl(110 30% 40%);
+}
