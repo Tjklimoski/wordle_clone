@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { STATUS, defaultKeyboard, anwserWords, dictionary} from './util/data';
 
-const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)]
+const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
 const WORD_LENGTH = 5;
 const ROWS = 6;
 
@@ -75,20 +75,42 @@ function App() {
 
     //define validateTiles func:
     const validateTiles = () => {
-      let letterCheck = ANSWER;
-      return board.map((tile, index) => {
-        if (tile.status !== STATUS.active) return tile;
+      //let letterCheck = ANSWER;
+      return board.map((tile, i, a) => {
 
-        let status = STATUS.wrong;
-        if (letterCheck.includes(tile.value)) {
+        if (tile.status !== STATUS.active) return tile;
+        let status;
+        const regExp = new RegExp(tile.value, 'gi');
+        const matchingLetters = [...ANSWER.matchAll(regExp)];
+        if (matchingLetters.length <= 1) {
+          status = STATUS.wrong;
+          if (matchingLetters.length) {
+            const letterIndex = matchingLetters[0]?.index;
+            if (letterIndex === i % WORD_LENGTH) status = STATUS.correct;
+            //to stop the first yellow showing letter if the 2nd placement of the same letter is in the correct place and the anwser word only contains that letter once:
+            //ex. answer: 'smote', user submits: 'tests'. the first t should have status wrong, the 2nd t should have status correct.
+            const indexOffset = letterIndex - (i % WORD_LENGTH);
+            if (
+              letterIndex !== i % WORD_LENGTH &&
+              a[i + indexOffset]?.value !== tile.value
+            ) {
+              const lettersInSubmittedWord = [...submittedWord.matchAll(regExp)];
+              if (lettersInSubmittedWord.length === 1) status = STATUS.wrongPosition;
+              //get smallest index position out of word that matches the letter.
+              const indexToColor = lettersInSubmittedWord.reduce((index, letter) => {
+                if (index >= letter.index) return letter.index;
+                return index;
+              }, WORD_LENGTH);
+              if (i % WORD_LENGTH === indexToColor) status = STATUS.wrongPosition;
+            }
+          }
+        } else {
           status = STATUS.wrongPosition;
-          //remove the letter from the answer word to prevent a user's double letter applying wrongPosition to the 2nd letter when the letter is only in the answer once.
-          //EX: answer is 'parry', user submits 'apple'. only the first 'p' should turn yellow.
-          //EX: answer is 'parry', user submits 'paper'. only the first 'p' should turn green, the 2nd 'p' should have status of wrong (not wrong-position).
-          letterCheck = letterCheck.replace(tile.value, "");
+          matchingLetters.forEach(letter => {
+            if (letter.index === i % WORD_LENGTH) status = STATUS.correct;
+          })
         }
-        if (ANSWER[index % WORD_LENGTH] === tile.value) status = STATUS.correct;
-        return { ...tile, status };
+        return {...tile, status};
       })
     }
 
