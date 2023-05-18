@@ -6,6 +6,13 @@ const STATUS = {
   active: 'active'
 }
 
+const ANIMATIONS = {
+  none: '',
+  shake: 'shake',
+  reveal: 'reveal',
+  dance: 'dance'
+}
+
 const defaultKeyboard = [
   { value: "q", status: STATUS.default },
   { value: "w", status: STATUS.default },
@@ -15330,4 +15337,4 @@ const dictionary = [
   "shave"
 ];
 
-export { STATUS, defaultKeyboard, anwserWords, dictionary };
+export { STATUS, ANIMATIONS, defaultKeyboard, anwserWords, dictionary };

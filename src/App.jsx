@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { nanoid } from 'nanoid';
-import { STATUS, defaultKeyboard, anwserWords, dictionary} from './util/data';
+import { STATUS, ANIMATIONS, defaultKeyboard, anwserWords, dictionary} from './util/data';
 
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
 const WORD_LENGTH = 5;
@@ -12,12 +12,55 @@ console.log("answer: ", ANSWER);
 
 function App() {
   const [board, setBoard] = useState(
-    Array(WORD_LENGTH * ROWS).fill({ value: null, status: STATUS.default })
+    Array(WORD_LENGTH * ROWS).fill({
+      value: null,
+      status: STATUS.default,
+      animation: ANIMATIONS.none,
+    })
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
   const [alerts, setAlerts] = useState([]);
   //change to useMemo?:
-  const activeTiles = board.filter(tile => tile.status === STATUS.active);
+  const activeTiles = board.filter((tile) => tile.status === STATUS.active);
+
+  console.log(board);
+
+  const sendAlert = useCallback((alert, duration = 1500) => {
+    setAlerts((currentAlerts) => [alert, ...currentAlerts]);
+    //remove the alert from alerts state after specified time
+    setTimeout(() => {
+      setAlerts((currentAlerts) => [...currentAlerts.slice(0, -1)]);
+    }, duration);
+  }, []);
+
+  // To allow animations to finish before allowing users to interact again
+  const stopProp = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  const stopUserInteraction = useCallback(() => {
+    document.addEventListener("click", stopProp, { capture: true });
+    document.addEventListener("keydown", stopProp, { capture: true });
+  }, [stopProp]);
+
+  const restoreUserInteraction = useCallback(() => {
+    document.removeEventListener("click", stopProp, { capture: true });
+    document.removeEventListener("keydown", stopProp, { capture: true });
+  }, [stopProp]);
+
+  const addAnimation = useCallback(
+    (animation) => {
+      stopUserInteraction();
+      setBoard((currentBoard) => {
+        return currentBoard.map((tile) => {
+          if (tile.status === STATUS.active) return { ...tile, animation };
+          return tile;
+        });
+      });
+      //animation end and restoreUserInteration is handled in event listener on tile element
+    },
+    [stopUserInteraction]
+  );
 
   const addLetter = useCallback(
     (letter) => {
@@ -56,19 +99,11 @@ function App() {
     });
   }, [activeTiles]);
 
-  const sendAlert = useCallback((alert, duration = 1500) => {
-    setAlerts((currentAlerts) => [alert, ...currentAlerts]);
-    //remove the alert from alerts state after specified time
-    setTimeout(() => {
-      setAlerts((currentAlerts) => [...currentAlerts.slice(0, currentAlerts.length - 1)]);
-    }, duration);
-  }, [])
-
   const submitWord = useCallback(() => {
     if (activeTiles.length !== WORD_LENGTH) {
-      sendAlert({id: nanoid(), message: "Not enough letters"});
+      sendAlert({ id: nanoid(), message: "Not enough letters" });
+      addAnimation(ANIMATIONS.shake);
       return;
-      //animate shake
     }
 
     const submittedWord = activeTiles.reduce((word, tile) => {
@@ -79,7 +114,6 @@ function App() {
     if (!dictionary.includes(submittedWord)) {
       sendAlert({ id: nanoid(), message: "Not a valid word" });
       //animate shake
-      //show alert
       return;
     }
 
@@ -133,6 +167,7 @@ function App() {
     //returns all tiles currently on board
     const newBoard = validateTiles();
     setBoard(newBoard);
+
     setKeyboard((currentKeyboard) => {
       //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
       const keyStatuses = newBoard.reduce((array, tile) => {
@@ -162,14 +197,13 @@ function App() {
     //check if word is the answer
     if (submittedWord === ANSWER) {
       //alert showed before tiles turned color:
-      alert("you Win!");
-      //show alert
+      sendAlert({ id: nanoid(), message: "Good job!" });
       //animate shake
       return;
     }
 
     return;
-  }, [activeTiles, board, sendAlert]);
+  }, [activeTiles, board, sendAlert, addAnimation]);
 
   const handleInput = useCallback(
     (input) => {
@@ -181,21 +215,6 @@ function App() {
     },
     [addLetter, deleteLetter, submitWord]
   );
-
-  // To allow animations to finish before allowing users to interact again
-  function stopInteraction(e) {
-    e.stopPropagation();
-  }
-
-  function stopUserInteraction() {
-    document.addEventListener("click", stopInteraction, { capture: true });
-    document.addEventListener("keydown", stopInteraction, { capture: true });
-  }
-
-  function restoreUserInteraction() {
-    document.removeEventListener("click", stopInteraction, { capture: true });
-    document.removeEventListener("keydown", stopInteraction, { capture: true });
-  }
 
   // setup keydown event listener
   useEffect(() => {
@@ -218,11 +237,33 @@ function App() {
       <div className="board">
         <div className="alerts">
           {alerts.map((alert) => {
-            return <div className="alert" key={alert.id}>{alert.message}</div>;
+            return (
+              <div className="alert" key={alert.id}>
+                {alert.message}
+              </div>
+            );
           })}
         </div>
-        {board.map(({ value, status }, index) => (
-          <div key={index} data-tile-status={status} className="tile">
+        {board.map(({ value, status, animation }, index) => (
+          <div
+            key={index}
+            data-tile-status={status}
+            className={`tile${animation ? " " + animation : ""}`}
+            onAnimationEnd={() => {
+              console.log("animation end called");
+              setBoard((currentBoard) => {
+                return currentBoard.map((tile) => {
+                  if (
+                    tile.animation !== ANIMATIONS.none &&
+                    tile.value === value
+                  )
+                    return { ...tile, animation: ANIMATIONS.none };
+                  return tile;
+                });
+              });
+              restoreUserInteraction();
+            }}
+          >
             {value}
           </div>
         ))}
