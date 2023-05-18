@@ -3,12 +3,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { STATUS, defaultKeyboard, anwserWords, dictionary} from './util/data';
 
-const answer = anwserWords[Math.floor(Math.random() * anwserWords.length)]
-console.log("answer: ", answer);
+const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)]
+const WORD_LENGTH = 5;
+const ROWS = 6;
+
+console.log("answer: ", ANSWER);
 
 function App() {
   const [board, setBoard] = useState(
-    Array(30).fill({ value: null, status: STATUS.default })
+    Array(WORD_LENGTH * ROWS).fill({ value: null, status: STATUS.default })
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
   //change to useMemo?:
@@ -17,7 +20,7 @@ function App() {
   const addLetter = useCallback(
     (letter) => {
       //only tiles that are in the process of being guessed will have an 'active' status. once guess is submitted they will turn to wrong, wrong-position or correct
-      if (activeTiles.length >= 5) {
+      if (activeTiles.length >= WORD_LENGTH) {
         return;
       }
 
@@ -42,7 +45,7 @@ function App() {
         // if value used in multiple tiles get the one in the same index position
         if (
           tile.value === activeTiles[tileToDeleteIndex].value &&
-          index % 5 === tileToDeleteIndex &&
+          index % WORD_LENGTH === tileToDeleteIndex &&
           tile.status === STATUS.active
         )
           return { value: null, status: STATUS.default };
@@ -52,7 +55,7 @@ function App() {
   }, [activeTiles]);
 
   const submitWord = useCallback(() => {
-    if (activeTiles.length < 5) {
+    if (activeTiles.length < WORD_LENGTH) {
       return;
       //animate shake
       //show alert
@@ -72,8 +75,7 @@ function App() {
 
     //define validateTiles func:
     const validateTiles = () => {
-      let letterCheck = answer;
-      console.log('letterCheck: ', letterCheck);
+      let letterCheck = ANSWER;
       return board.map((tile, index) => {
         if (tile.status !== STATUS.active) return tile;
 
@@ -85,7 +87,7 @@ function App() {
           //EX: answer is 'parry', user submits 'paper'. only the first 'p' should turn green, the 2nd 'p' should have status of wrong (not wrong-position).
           letterCheck = letterCheck.replace(tile.value, "");
         }
-        if (answer[index % 5] === tile.value) status = STATUS.correct;
+        if (ANSWER[index % WORD_LENGTH] === tile.value) status = STATUS.correct;
         return { ...tile, status };
       })
     }
@@ -120,7 +122,7 @@ function App() {
     //animate letter flip reveal
 
     //check if word is the answer
-    if (submittedWord === answer) {
+    if (submittedWord === ANSWER) {
       //alert showed before tiles turned color:
       alert("you Win!");
       //show alert
