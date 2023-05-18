@@ -99,6 +99,7 @@ function App() {
 
   function validateTiles() {
     let letterCheck = answer;
+    console.log('letterCheck: ', letterCheck);
     return board.map((tile, index) => {
       if (tile.status !== STATUS.active) return tile;
 
@@ -110,7 +111,7 @@ function App() {
         //EX: answer is 'parry', user submits 'paper'. only the first 'p' should turn green, the 2nd 'p' should have status of wrong.
         letterCheck = letterCheck.replace(tile.value, "");
       }
-      if (answer[index] === tile.value) status = STATUS.correct;
+      if (answer[index % 5] === tile.value) status = STATUS.correct;
       return { ...tile, status };
     })
   }
