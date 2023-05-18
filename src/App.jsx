@@ -54,6 +54,8 @@ function App() {
   const submitWord = useCallback(() => {
     if (activeTiles.length < 5) {
       return;
+      //animate shake
+      //show alert
     }
 
     const submittedWord = activeTiles.reduce((word, tile) => {
@@ -63,66 +65,82 @@ function App() {
     //check if word is in dictionary
     if (!dictionary.includes(submittedWord)) {
       alert("not valid word!");
+      //animate shake
+      //show alert
       return;
     }
-    
+
+    //define validateTiles func:
+    const validateTiles = () => {
+      let letterCheck = answer;
+      console.log('letterCheck: ', letterCheck);
+      return board.map((tile, index) => {
+        if (tile.status !== STATUS.active) return tile;
+
+        let status = STATUS.wrong;
+        if (letterCheck.includes(tile.value)) {
+          status = STATUS.wrongPosition;
+          //remove the letter from the answer word to prevent a user's double letter applying wrongPosition to the 2nd letter when the letter is only in the answer once.
+          //EX: answer is 'parry', user submits 'apple'. only the first 'p' should turn yellow.
+          //EX: answer is 'parry', user submits 'paper'. only the first 'p' should turn green, the 2nd 'p' should have status of wrong (not wrong-position).
+          letterCheck = letterCheck.replace(tile.value, "");
+        }
+        if (answer[index % 5] === tile.value) status = STATUS.correct;
+        return { ...tile, status };
+      })
+    }
+
+    //returns all tiles currently on board
+    const newBoard = validateTiles();
+    setBoard(newBoard);
+    setKeyboard((currentKeyboard) => {
+      //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
+      const keyStatuses = newBoard.reduce((array, tile) => {
+        if (!array) return [tile];
+        //don't add the tile if it's status is default
+        if (tile.status === STATUS.default) return [...array];
+        if (!array.some((t) => t.value === tile.value)) return [...array, tile];
+        return array.map((t) => {
+          if (t.value === tile.value) {
+            if (tile.status === STATUS.correct) return tile;
+            if (
+              tile.status === STATUS.wrongPosition &&
+              t.status !== STATUS.correct
+            )
+              return tile;
+          }
+          return t;
+        });
+      }, []);
+
+      return currentKeyboard.map((key) => {
+        return keyStatuses.find((k) => k.value === key.value) || key;
+      });
+    });
+    //animate letter flip reveal
+
     //check if word is the answer
     if (submittedWord === answer) {
-      alert('you Win!');
-    } else {
-      const newBoard = validateTiles();
-      setBoard(newBoard);
-      setKeyboard(currentKeyboard => {
-        //create array only containing the highlesdt level key status (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
-        const keyStatuses = newBoard.reduce((array, tile) => {
-          if (!array) return [tile];
-          if (tile.status === STATUS.default) return [...array];
-          if (!array.some(t => t.value === tile.value)) return [...array, tile];
-          return array.map(t => {
-            if (t.value === tile.value) {
-              if (tile.status === STATUS.correct) return tile;
-              if (tile.status === STATUS.wrongPosition && t.status !== STATUS.correct) return tile;
-            }
-            return t;
-          })
-        }, []);
-
-        return currentKeyboard.map(key => {
-          return keyStatuses.find((k) => k.value === key.value) || key;
-        })
-      })
-      //animate board
+      //alert showed before tiles turned color:
+      alert("you Win!");
+      //show alert
+      //animate shake
+      return;
     }
 
     return;
-  }, [activeTiles]);
+  }, [activeTiles, board]);
 
-  function validateTiles() {
-    let letterCheck = answer;
-    console.log('letterCheck: ', letterCheck);
-    return board.map((tile, index) => {
-      if (tile.status !== STATUS.active) return tile;
-
-      let status = STATUS.wrong;
-      if (letterCheck.includes(tile.value)) {
-        status = STATUS.wrongPosition;
-        //remove the letter from the answer word to prevent a user's double letter applying wrongPosition to the 2nd letter when the letter is only in the answer once.
-        //EX: answer is 'parry', user submits 'apple'. only the first 'p' should turn yellow.
-        //EX: answer is 'parry', user submits 'paper'. only the first 'p' should turn green, the 2nd 'p' should have status of wrong.
-        letterCheck = letterCheck.replace(tile.value, "");
-      }
-      if (answer[index % 5] === tile.value) status = STATUS.correct;
-      return { ...tile, status };
-    })
-  }
-
-  const handleInput = useCallback((input) => {
-    input = input.toLowerCase();
-    if (input === "delete" || input === "backspace") return deleteLetter();
-    if (input === "enter") return submitWord();
-    if (/^[a-z]$/.test(input)) return addLetter(input);
-    return;
-  }, [addLetter, deleteLetter]);
+  const handleInput = useCallback(
+    (input) => {
+      input = input.toLowerCase();
+      if (input === "delete" || input === "backspace") return deleteLetter();
+      if (input === "enter") return submitWord();
+      if (/^[a-z]$/.test(input)) return addLetter(input);
+      return;
+    },
+    [addLetter, deleteLetter, submitWord]
+  );
 
   // To allow animations to finish before allowing users to interact again
   function stopInteraction(e) {
@@ -154,6 +172,9 @@ function App() {
 
   return (
     <div className="wrapper">
+      <header>
+        <h1>NOTWORDLE</h1>
+      </header>
       <div className="board">
         {board.map(({ value, status }, index) => (
           <div key={index} data-tile-status={status} className="tile">

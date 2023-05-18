@@ -5,9 +5,10 @@
 
 body {
   background-color: #050505;
-  font-size: clamp(.5rem, 2.5vmin, 1.5rem);
+  font-size: clamp(.5rem, 2vh, 1.5rem);
   color: #ddd;
   margin: 0;
+  overflow-x: hidden;
 }
 
 .wrapper {
@@ -17,6 +18,12 @@ body {
   margin: 0;
   padding: 1em;
   align-items: center;
+}
+
+header {
+  width: 105%;
+  border-bottom: .05em solid #777;
+  text-align: center;
 }
 
 .keyboard {
