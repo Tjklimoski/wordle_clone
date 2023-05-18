@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
+import { nanoid } from 'nanoid';
 import { STATUS, defaultKeyboard, anwserWords, dictionary} from './util/data';
 
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
@@ -217,6 +218,11 @@ function App() {
         <h1>NOTWORDLE</h1>
       </header>
       <div className="board">
+        <div className="alerts">
+          {alerts.map((alert) => {
+            return <div className="alert" key={nanoid()}>{alert}</div>;
+          })}
+        </div>
         {board.map(({ value, status }, index) => (
           <div key={index} data-tile-status={status} className="tile">
             {value}
