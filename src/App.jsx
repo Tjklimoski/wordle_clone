@@ -11,11 +11,12 @@ function App() {
     Array(30).fill({ value: null, status: STATUS.default })
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
+  //change to useMemo?:
   const activeTiles = board.filter(tile => tile.status === STATUS.active);
 
   const addLetter = useCallback(
     (letter) => {
-      //only tiles that are in the process of being guessed will have an 'active' status. once guess is submitted the will turn to wrong, wrong-position or correct
+      //only tiles that are in the process of being guessed will have an 'active' status. once guess is submitted they will turn to wrong, wrong-position or correct
       if (activeTiles.length >= 5) {
         return;
       }
@@ -49,6 +50,33 @@ function App() {
     });
   }, [activeTiles]);
 
+  const submitWord = useCallback(() => {
+    if (activeTiles.length < 5) {
+      return;
+    }
+
+    const submittedWord = activeTiles.reduce((word, tile) => {
+      return (word += tile.value);
+    }, "");
+
+    //check if word is in dictionary
+    if (!dictionary.includes(submittedWord)) {
+      alert("not valid word!");
+      return;
+    }
+    
+    //check if word is the answer
+    if (submittedWord === answer) {
+      alert('you Win!');
+    } else {
+      //set board statuses
+      //set key statuses
+      //animate board
+    }
+
+    return;
+  }, [activeTiles]);
+
   const handleInput = useCallback((input) => {
     input = input.toLowerCase();
     if (input === "delete" || input === "backspace") return deleteLetter();
@@ -56,10 +84,6 @@ function App() {
     if (/^[a-z]$/.test(input)) return addLetter(input);
     return;
   }, [addLetter, deleteLetter]);
-
-  function submitWord() {
-    return;
-  }
 
   // To allow animations to finish before allowing users to interact again
   function stopInteraction(e) {
