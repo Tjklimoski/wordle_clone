@@ -14,6 +14,7 @@ function App() {
     Array(WORD_LENGTH * ROWS).fill({ value: null, status: STATUS.default })
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
+  const [alerts, setAlerts] = useState([]);
   //change to useMemo?:
   const activeTiles = board.filter(tile => tile.status === STATUS.active);
 
@@ -55,7 +56,7 @@ function App() {
   }, [activeTiles]);
 
   const submitWord = useCallback(() => {
-    if (activeTiles.length < WORD_LENGTH) {
+    if (activeTiles.length !== WORD_LENGTH) {
       return;
       //animate shake
       //show alert
@@ -85,7 +86,7 @@ function App() {
         if (matchingLetters.length <= 1) {
           status = STATUS.wrong;
           if (matchingLetters.length) {
-            const letterIndex = matchingLetters[0]?.index;
+            const letterIndex = matchingLetters[0].index;
             if (letterIndex === i % WORD_LENGTH) status = STATUS.correct;
             //to stop the first yellow showing letter if the 2nd placement of the same letter is in the correct place and the anwser word only contains that letter once:
             //ex. answer: 'smote', user submits: 'tests'. the first t should have status wrong, the 2nd t should have status correct.
