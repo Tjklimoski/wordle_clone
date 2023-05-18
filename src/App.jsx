@@ -57,10 +57,10 @@ function App() {
   }, [activeTiles]);
 
   const sendAlert = useCallback((alert, duration = 1500) => {
-    setAlerts((currentAlerts) => [...currentAlerts, alert]);
+    setAlerts((currentAlerts) => [alert, ...currentAlerts]);
     //remove the alert from alerts state after specified time
     setTimeout(() => {
-      setAlerts((currentAlerts) => [...currentAlerts.slice(1)]);
+      setAlerts((currentAlerts) => [...currentAlerts.slice(0, currentAlerts.length - 1)]);
     }, duration);
   }, [])
 
