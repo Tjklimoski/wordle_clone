@@ -42,7 +42,8 @@ function App() {
         // if value used in multiple tiles get the one in the same index position
         if (
           tile.value === activeTiles[tileToDeleteIndex].value &&
-          index % 5 === tileToDeleteIndex
+          index % 5 === tileToDeleteIndex &&
+          tile.status === STATUS.active
         )
           return { value: null, status: STATUS.default };
         return tile;
@@ -69,13 +70,50 @@ function App() {
     if (submittedWord === answer) {
       alert('you Win!');
     } else {
-      //set board statuses
-      //set key statuses
+      const newBoard = validateTiles();
+      setBoard(newBoard);
+      setKeyboard(currentKeyboard => {
+        //create array only containing the highlesdt level key status (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
+        const keyStatuses = newBoard.reduce((array, tile) => {
+          if (!array) return [tile];
+          if (tile.status === STATUS.default) return [...array];
+          if (!array.some(t => t.value === tile.value)) return [...array, tile];
+          return array.map(t => {
+            if (t.value === tile.value) {
+              if (tile.status === STATUS.correct) return tile;
+              if (tile.status === STATUS.wrongPosition && t.status !== STATUS.correct) return tile;
+            }
+            return t;
+          })
+        }, []);
+
+        return currentKeyboard.map(key => {
+          return keyStatuses.find((k) => k.value === key.value) || key;
+        })
+      })
       //animate board
     }
 
     return;
   }, [activeTiles]);
+
+  function validateTiles() {
+    let letterCheck = answer;
+    return board.map((tile, index) => {
+      if (tile.status !== STATUS.active) return tile;
+
+      let status = STATUS.wrong;
+      if (letterCheck.includes(tile.value)) {
+        status = STATUS.wrongPosition;
+        //remove the letter from the answer word to prevent a user's double letter applying wrongPosition to the 2nd letter when the letter is only in the answer once.
+        //EX: answer is 'parry', user submits 'apple'. only the first 'p' should turn yellow.
+        //EX: answer is 'parry', user submits 'paper'. only the first 'p' should turn green, the 2nd 'p' should have status of wrong.
+        letterCheck = letterCheck.replace(tile.value, "");
+      }
+      if (answer[index] === tile.value) status = STATUS.correct;
+      return { ...tile, status };
+    })
+  }
 
   const handleInput = useCallback((input) => {
     input = input.toLowerCase();
