@@ -6,6 +6,7 @@ import { STATUS, defaultKeyboard, anwserWords, dictionary} from './util/data';
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
 const WORD_LENGTH = 5;
 const ROWS = 6;
+const ALERT_TIME = 1000;
 
 console.log("answer: ", ANSWER);
 
@@ -55,8 +56,17 @@ function App() {
     });
   }, [activeTiles]);
 
+  const sendAlert = useCallback((message) => {
+    setAlerts((currentAlerts) => [...currentAlerts, message]);
+    //remove the alert from alerts state after specified time
+    setTimeout(() => {
+      setAlerts((currentAlerts) => [...currentAlerts.shift()]);
+    }, ALERT_TIME);
+  }, [])
+
   const submitWord = useCallback(() => {
     if (activeTiles.length !== WORD_LENGTH) {
+      sendAlert("Not enough letters");
       return;
       //animate shake
       //show alert
@@ -78,10 +88,9 @@ function App() {
     const validateTiles = () => {
       //let letterCheck = ANSWER;
       return board.map((tile, i, a) => {
-
         if (tile.status !== STATUS.active) return tile;
         let status;
-        const regExp = new RegExp(tile.value, 'gi');
+        const regExp = new RegExp(tile.value, "gi");
         const matchingLetters = [...ANSWER.matchAll(regExp)];
         if (matchingLetters.length <= 1) {
           status = STATUS.wrong;
@@ -95,25 +104,32 @@ function App() {
               letterIndex !== i % WORD_LENGTH &&
               a[i + indexOffset]?.value !== tile.value
             ) {
-              const lettersInSubmittedWord = [...submittedWord.matchAll(regExp)];
-              if (lettersInSubmittedWord.length === 1) status = STATUS.wrongPosition;
+              const lettersInSubmittedWord = [
+                ...submittedWord.matchAll(regExp),
+              ];
+              if (lettersInSubmittedWord.length === 1)
+                status = STATUS.wrongPosition;
               //get smallest index position out of word that matches the letter.
-              const indexToColor = lettersInSubmittedWord.reduce((index, letter) => {
-                if (index >= letter.index) return letter.index;
-                return index;
-              }, WORD_LENGTH);
-              if (i % WORD_LENGTH === indexToColor) status = STATUS.wrongPosition;
+              const indexToColor = lettersInSubmittedWord.reduce(
+                (index, letter) => {
+                  if (index >= letter.index) return letter.index;
+                  return index;
+                },
+                WORD_LENGTH
+              );
+              if (i % WORD_LENGTH === indexToColor)
+                status = STATUS.wrongPosition;
             }
           }
         } else {
           status = STATUS.wrongPosition;
-          matchingLetters.forEach(letter => {
+          matchingLetters.forEach((letter) => {
             if (letter.index === i % WORD_LENGTH) status = STATUS.correct;
-          })
+          });
         }
-        return {...tile, status};
-      })
-    }
+        return { ...tile, status };
+      });
+    };
 
     //returns all tiles currently on board
     const newBoard = validateTiles();
@@ -154,7 +170,7 @@ function App() {
     }
 
     return;
-  }, [activeTiles, board]);
+  }, [activeTiles, board, sendAlert]);
 
   const handleInput = useCallback(
     (input) => {
