@@ -7,7 +7,6 @@ import { STATUS, defaultKeyboard, anwserWords, dictionary} from './util/data';
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
 const WORD_LENGTH = 5;
 const ROWS = 6;
-const ALERT_TIME = 1000;
 
 console.log("answer: ", ANSWER);
 
@@ -57,17 +56,17 @@ function App() {
     });
   }, [activeTiles]);
 
-  const sendAlert = useCallback((message) => {
-    setAlerts((currentAlerts) => [...currentAlerts, message]);
+  const sendAlert = useCallback((alert, duration = 1000) => {
+    setAlerts((currentAlerts) => [...currentAlerts, alert]);
     //remove the alert from alerts state after specified time
     setTimeout(() => {
-      setAlerts((currentAlerts) => [...currentAlerts.shift()]);
-    }, ALERT_TIME);
+      setAlerts((currentAlerts) => [...currentAlerts.slice(1)]);
+    }, duration);
   }, [])
 
   const submitWord = useCallback(() => {
     if (activeTiles.length !== WORD_LENGTH) {
-      sendAlert("Not enough letters");
+      sendAlert({id: nanoid(), message: "Not enough letters"});
       return;
       //animate shake
       //show alert
@@ -220,7 +219,7 @@ function App() {
       <div className="board">
         <div className="alerts">
           {alerts.map((alert) => {
-            return <div className="alert" key={nanoid()}>{alert}</div>;
+            return <div className="alert" key={alert.id}>{alert.message}</div>;
           })}
         </div>
         {board.map(({ value, status }, index) => (

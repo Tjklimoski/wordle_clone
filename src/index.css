@@ -91,6 +91,7 @@ header {
 }
 
 .board {
+  position: relative;
   flex-grow: 1;
   display: grid;
   justify-content: center;
@@ -129,4 +130,43 @@ header {
 .tile[data-tile-status="correct"] {
   border: none;
   background-color: hsl(110 30% 40%);
+}
+
+.alerts {
+  position: absolute;
+  top: 3.25em;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5em;
+  z-index: 1;
+}
+
+.alert {
+  color: black;
+  pointer-events: none;
+  background-color: #bbb;
+  padding: .75em;
+  border-radius: .25em;
+  opacity: 0;
+  animation: show-alert 1000ms;
+}
+
+@keyframes show-alert {
+  0% {
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
