@@ -4,7 +4,7 @@
 }
 
 body {
-  background-color: #050505;
+  background-color: #111111;
   font-size: clamp(.5rem, 2vh, 1.5rem);
   color: #ddd;
   margin: 0;
@@ -134,7 +134,7 @@ header {
 
 .alerts {
   position: absolute;
-  top: 3.25em;
+  top: 1em;
   width: 100%;
   display: flex;
   flex-direction: column;

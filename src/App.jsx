@@ -69,7 +69,6 @@ function App() {
       sendAlert({id: nanoid(), message: "Not enough letters"});
       return;
       //animate shake
-      //show alert
     }
 
     const submittedWord = activeTiles.reduce((word, tile) => {
@@ -78,7 +77,7 @@ function App() {
 
     //check if word is in dictionary
     if (!dictionary.includes(submittedWord)) {
-      alert("not valid word!");
+      sendAlert({ id: nanoid(), message: "Not a valid word" });
       //animate shake
       //show alert
       return;
