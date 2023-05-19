@@ -121,7 +121,7 @@ function App() {
     //define validateTiles func:
     const validateTiles = (currentBoard = board) => {
       //let letterCheck = ANSWER;
-      return board.map((tile, i, a) => {
+      return currentBoard.map((tile, i, a) => {
         if (tile.status !== STATUS.active) return tile;
         let status;
         const regExp = new RegExp(tile.value, "gi");

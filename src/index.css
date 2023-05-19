@@ -220,23 +220,23 @@ header {
 
 .tile.reveal {
   background-color: transparent;
-  animation: reveal 1000ms ease-in-out var(--reveal-delay, 0ms) forwards;
+  animation: reveal 800ms ease-in-out var(--reveal-delay, 0ms) forwards;
 }
 
 :nth-child(2 of .tile.reveal) {
-  --reveal-delay: 250ms;
+  --reveal-delay: 200ms;
 }
 
 :nth-child(3 of .tile.reveal) {
-  --reveal-delay: 500ms;
+  --reveal-delay: 400ms;
 }
 
 :nth-child(4 of .tile.reveal) {
-  --reveal-delay: 750ms;
+  --reveal-delay: 600ms;
 }
 
 :nth-child(5 of .tile.reveal) {
-  --reveal-delay: 1000ms;
+  --reveal-delay: 800ms;
 }
 
 @keyframes reveal {
