@@ -23,7 +23,7 @@ function App() {
   //change to useMemo?:
   const activeTiles = board.filter((tile) => tile.status === STATUS.active);
 
-  console.log(board);
+  console.log('board top level: ', board);
 
   const sendAlert = useCallback((alert, duration = 1500) => {
     setAlerts((currentAlerts) => [alert, ...currentAlerts]);
@@ -50,6 +50,7 @@ function App() {
 
   const addAnimation = useCallback(
     (animation) => {
+      console.log('adding animation: ', animation);
       stopUserInteraction();
       setBoard((currentBoard) => {
         return currentBoard.map((tile) => {
@@ -75,7 +76,7 @@ function App() {
         );
         return currentBoard.map((tile, index) => {
           if (index !== nextEmptyPosition) return tile;
-          return { value: letter, status: STATUS.active };
+          return { ...tile, value: letter, status: STATUS.active };
         });
       });
     },
@@ -113,12 +114,12 @@ function App() {
     //check if word is in dictionary
     if (!dictionary.includes(submittedWord)) {
       sendAlert({ id: nanoid(), message: "Not a valid word" });
-      //animate shake
+      addAnimation(ANIMATIONS.shake);
       return;
     }
 
     //define validateTiles func:
-    const validateTiles = () => {
+    const validateTiles = (currentBoard = board) => {
       //let letterCheck = ANSWER;
       return board.map((tile, i, a) => {
         if (tile.status !== STATUS.active) return tile;
@@ -164,34 +165,61 @@ function App() {
       });
     };
 
-    //returns all tiles currently on board
-    const newBoard = validateTiles();
-    setBoard(newBoard);
+    addAnimation(ANIMATIONS.reveal);
+    setBoard(currentBoard => {
+      const newBoard = validateTiles(currentBoard);
+      setKeyboard((currentKeyboard) => {
+        //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
+        const keyStatuses = newBoard.reduce((array, tile) => {
+          if (!array) return [tile];
+          //don't add the tile if it's status is default
+          if (tile.status === STATUS.default) return [...array];
+          if (!array.some((t) => t.value === tile.value))
+            return [...array, tile];
+          return array.map((t) => {
+            if (t.value === tile.value) {
+              if (tile.status === STATUS.correct) return tile;
+              if (
+                tile.status === STATUS.wrongPosition &&
+                t.status !== STATUS.correct
+              )
+                return tile;
+            }
+            return t;
+          });
+        }, []);
 
-    setKeyboard((currentKeyboard) => {
-      //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
-      const keyStatuses = newBoard.reduce((array, tile) => {
-        if (!array) return [tile];
-        //don't add the tile if it's status is default
-        if (tile.status === STATUS.default) return [...array];
-        if (!array.some((t) => t.value === tile.value)) return [...array, tile];
-        return array.map((t) => {
-          if (t.value === tile.value) {
-            if (tile.status === STATUS.correct) return tile;
-            if (
-              tile.status === STATUS.wrongPosition &&
-              t.status !== STATUS.correct
-            )
-              return tile;
-          }
-          return t;
+        return currentKeyboard.map((key) => {
+          return keyStatuses.find((k) => k.value === key.value) || key;
         });
-      }, []);
-
-      return currentKeyboard.map((key) => {
-        return keyStatuses.find((k) => k.value === key.value) || key;
       });
+      return newBoard;
     });
+
+    // setKeyboard((currentKeyboard) => {
+    //   //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
+    //   const keyStatuses = newBoard.reduce((array, tile) => {
+    //     if (!array) return [tile];
+    //     //don't add the tile if it's status is default
+    //     if (tile.status === STATUS.default) return [...array];
+    //     if (!array.some((t) => t.value === tile.value)) return [...array, tile];
+    //     return array.map((t) => {
+    //       if (t.value === tile.value) {
+    //         if (tile.status === STATUS.correct) return tile;
+    //         if (
+    //           tile.status === STATUS.wrongPosition &&
+    //           t.status !== STATUS.correct
+    //         )
+    //           return tile;
+    //       }
+    //       return t;
+    //     });
+    //   }, []);
+
+    //   return currentKeyboard.map((key) => {
+    //     return keyStatuses.find((k) => k.value === key.value) || key;
+    //   });
+    // });
     //animate letter flip reveal
 
     //check if word is the answer
@@ -250,7 +278,7 @@ function App() {
             data-tile-status={status}
             className={`tile${animation ? " " + animation : ""}`}
             onAnimationEnd={() => {
-              console.log("animation end called");
+              console.log("animation end called", Date.now());
               setBoard((currentBoard) => {
                 const newBoard = currentBoard.map((tile) => {
                   if (

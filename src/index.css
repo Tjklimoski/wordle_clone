@@ -218,33 +218,25 @@ header {
   }
 } */
 
-:nth-child(1 of .tile.reveal) {
+.tile.reveal {
   background-color: transparent;
-  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
+  animation: reveal 1000ms ease-in-out var(--reveal-delay, 0ms) forwards;
 }
 
 :nth-child(2 of .tile.reveal) {
-  background-color: transparent;
   --reveal-delay: 250ms;
-  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
 }
 
 :nth-child(3 of .tile.reveal) {
-  background-color: transparent;
   --reveal-delay: 500ms;
-  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
 }
 
 :nth-child(4 of .tile.reveal) {
-  background-color: transparent;
   --reveal-delay: 750ms;
-  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
 }
 
 :nth-child(5 of .tile.reveal) {
-  background-color: transparent;
   --reveal-delay: 1000ms;
-  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
 }
 
 @keyframes reveal {
