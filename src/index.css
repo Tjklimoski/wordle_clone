@@ -201,23 +201,23 @@ header {
 .tile.reveal {
   border: .05em solid #606060;
   --opacity: 0;
-  animation: reveal 800ms ease-in-out var(--reveal-delay, 0ms) forwards;
+  animation: reveal 500ms ease-in-out var(--reveal-delay, 0ms) forwards;
 }
 
 :nth-child(2 of .tile.reveal) {
-  --reveal-delay: 200ms;
+  --reveal-delay: 100ms;
 }
 
 :nth-child(3 of .tile.reveal) {
-  --reveal-delay: 400ms;
+  --reveal-delay: 200ms;
 }
 
 :nth-child(4 of .tile.reveal) {
-  --reveal-delay: 600ms;
+  --reveal-delay: 300ms;
 }
 
 :nth-child(5 of .tile.reveal) {
-  --reveal-delay: 800ms;
+  --reveal-delay: 400ms;
 }
 
 @keyframes reveal {
@@ -226,17 +226,54 @@ header {
   }
   50% {
     --opacity: 1;
-    transform: scaleY(0);
+    transform: rotateX(90deg);
     border: none;
   }
 
   100% {
     --opacity: 1;
-    transform: scaleY(1);
+    transform: rotateX(0);
     border: none;
   }
 }
 
 .tile.dance {
-  animation: dance 500ms ease-in-out;
+  animation: dance 500ms ease-in-out var(--reveal-delay, 0ms);
+}
+
+:nth-child(2 of .tile.dance) {
+  --reveal-delay: 100ms;
+}
+
+:nth-child(3 of .tile.dance) {
+  --reveal-delay: 200ms;
+}
+
+:nth-child(4 of .tile.dance) {
+  --reveal-delay: 300ms;
+}
+
+:nth-child(5 of .tile.dance) {
+  --reveal-delay: 400ms;
+}
+
+@keyframes dance {
+  20% {
+    transform: translateY(-50%);
+  }
+  40% {
+    transform: translateY(5%);
+  }
+  60% {
+    transform: translateY(-25%);
+  }
+  80% {
+    transform: translateY(2.5%);
+  }
+  90% {
+    transform: translateY(-5%);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }

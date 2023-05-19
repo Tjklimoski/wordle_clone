@@ -20,6 +20,7 @@ function App() {
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
   const [alerts, setAlerts] = useState([]);
+  const [isWin, setIsWin] = useState({ win: false, playAnimation: false });
   const debounce = useRef(null);
   const activeTiles = board.filter((tile) => tile.status === STATUS.active);
 
@@ -50,11 +51,10 @@ function App() {
 
   const addAnimation = useCallback(
     (animation) => {
-      console.log('adding animation: ', animation);
       stopUserInteraction();
       setBoard((currentBoard) => {
         return currentBoard.map((tile) => {
-          if (tile.status === STATUS.active) return { ...tile, animation };
+          if (tile.status === STATUS.active || tile.win === true) return { ...tile, animation };
           return tile;
         });
       });
@@ -165,8 +165,19 @@ function App() {
       });
     };
 
+    //check if submitted word is the answer - set win on each tile.
+    if (submittedWord === ANSWER) {
+      setIsWin({ win: true, playAnimation: true });
+      setBoard((currentBoard) => {
+        return currentBoard.map((tile) => {
+          if (tile.status === STATUS.active) return { ...tile, win: true };
+          return tile;
+        });
+      });
+    }
+
     addAnimation(ANIMATIONS.reveal);
-    setBoard(currentBoard => {
+    setBoard((currentBoard) => {
       const newBoard = validateTiles(currentBoard);
       setKeyboard((currentKeyboard) => {
         //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
@@ -195,14 +206,6 @@ function App() {
       });
       return newBoard;
     });
-
-    //check if word is the answer
-    if (submittedWord === ANSWER) {
-      //alert showed before tiles turned color:
-      sendAlert({ id: nanoid(), message: "Good job!" });
-      //animate shake
-      return;
-    }
 
     return;
   }, [activeTiles, board, sendAlert, addAnimation]);
@@ -236,7 +239,28 @@ function App() {
       <header>
         <h1>NOTWORDLE</h1>
       </header>
-      <div className="board">
+      <div
+        className="board"
+        onAnimationEnd={() => {
+          const delay = 150;
+          clearTimeout(debounce.current);
+          debounce.current = setTimeout(() => {
+            setBoard((currentBoard) => {
+              return currentBoard.map((tile) => {
+                if (tile.animation !== ANIMATIONS.none)
+                  return { ...tile, animation: ANIMATIONS.none };
+                return tile;
+              });
+            });
+            if (!isWin.win) restoreUserInteraction();
+            if (isWin.playAnimation) {
+              addAnimation(ANIMATIONS.dance);
+              sendAlert({ id: nanoid(), message: "You win!" }, 5000);
+              setIsWin((current) => ({ ...current, playAnimation: false }));
+            }
+          }, delay);
+        }}
+      >
         <div className="alerts">
           {alerts.map((alert) => {
             return (
@@ -251,26 +275,6 @@ function App() {
             key={index}
             data-tile-status={status}
             className={`tile${animation ? " " + animation : ""}`}
-            onAnimationEnd={() => {
-              console.log("animation end called", Date.now());
-              const delay = 250;
-              clearTimeout(debounce.current);
-              debounce.current = setTimeout(() => {
-                setBoard((currentBoard) => {
-                  const newBoard = currentBoard.map((tile) => {
-                    if (
-                      tile.animation !== ANIMATIONS.none
-                    )
-                      return { ...tile, animation: ANIMATIONS.none };
-                    return tile;
-                  });
-                  console.log("AE newBoard: ", newBoard);
-                  return newBoard;
-                });
-                console.log('BOARD SET');
-                restoreUserInteraction();
-              }, delay)
-            }}
           >
             {value}
           </div>
@@ -303,3 +307,7 @@ export default App
 //create custom hook for useAnimation, useAlert, and useWordle?
 
 //move onAnimationEnd to document event listner? Should these event listeners be moved out of react completly?
+
+//change flip tile animation to tranisition?
+
+//add lose state
