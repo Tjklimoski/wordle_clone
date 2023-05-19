@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { nanoid } from 'nanoid';
@@ -20,7 +20,7 @@ function App() {
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
   const [alerts, setAlerts] = useState([]);
-  //change to useMemo?:
+  const debounce = useRef(null);
   const activeTiles = board.filter((tile) => tile.status === STATUS.active);
 
   console.log('board top level: ', board);
@@ -279,19 +279,23 @@ function App() {
             className={`tile${animation ? " " + animation : ""}`}
             onAnimationEnd={() => {
               console.log("animation end called", Date.now());
-              setBoard((currentBoard) => {
-                const newBoard = currentBoard.map((tile) => {
-                  if (
-                    tile.animation !== ANIMATIONS.none &&
-                    tile.value === value
-                  )
-                    return { ...tile, animation: ANIMATIONS.none };
-                  return tile;
+              const delay = 250;
+              clearTimeout(debounce.current);
+              debounce.current = setTimeout(() => {
+                setBoard((currentBoard) => {
+                  const newBoard = currentBoard.map((tile) => {
+                    if (
+                      tile.animation !== ANIMATIONS.none
+                    )
+                      return { ...tile, animation: ANIMATIONS.none };
+                    return tile;
+                  });
+                  console.log("AE newBoard: ", newBoard);
+                  return newBoard;
                 });
-                console.log('AE newBoard: ', newBoard);
-                return newBoard;
-              });
-              restoreUserInteraction();
+                console.log('BOARD SET');
+                restoreUserInteraction();
+              }, delay)
             }}
           >
             {value}
