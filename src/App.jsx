@@ -196,32 +196,6 @@ function App() {
       return newBoard;
     });
 
-    // setKeyboard((currentKeyboard) => {
-    //   //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
-    //   const keyStatuses = newBoard.reduce((array, tile) => {
-    //     if (!array) return [tile];
-    //     //don't add the tile if it's status is default
-    //     if (tile.status === STATUS.default) return [...array];
-    //     if (!array.some((t) => t.value === tile.value)) return [...array, tile];
-    //     return array.map((t) => {
-    //       if (t.value === tile.value) {
-    //         if (tile.status === STATUS.correct) return tile;
-    //         if (
-    //           tile.status === STATUS.wrongPosition &&
-    //           t.status !== STATUS.correct
-    //         )
-    //           return tile;
-    //       }
-    //       return t;
-    //     });
-    //   }, []);
-
-    //   return currentKeyboard.map((key) => {
-    //     return keyStatuses.find((k) => k.value === key.value) || key;
-    //   });
-    // });
-    //animate letter flip reveal
-
     //check if word is the answer
     if (submittedWord === ANSWER) {
       //alert showed before tiles turned color:
@@ -325,3 +299,7 @@ function App() {
 }
 
 export default App
+
+//create custom hook for useAnimation, useAlert, and useWordle?
+
+//move onAnimationEnd to document event listner? Should these event listeners be moved out of react completly?
