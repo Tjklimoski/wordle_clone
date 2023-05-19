@@ -93,7 +93,7 @@ function App() {
           index % WORD_LENGTH === tileToDeleteIndex &&
           tile.status === STATUS.active
         )
-          return { value: null, status: STATUS.default };
+          return { value: null, status: STATUS.default, animation: ANIMATIONS.none };
         return tile;
       });
     });
@@ -252,7 +252,7 @@ function App() {
             onAnimationEnd={() => {
               console.log("animation end called");
               setBoard((currentBoard) => {
-                return currentBoard.map((tile) => {
+                const newBoard = currentBoard.map((tile) => {
                   if (
                     tile.animation !== ANIMATIONS.none &&
                     tile.value === value
@@ -260,6 +260,8 @@ function App() {
                     return { ...tile, animation: ANIMATIONS.none };
                   return tile;
                 });
+                console.log('AE newBoard: ', newBoard);
+                return newBoard;
               });
               restoreUserInteraction();
             }}
