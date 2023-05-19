@@ -119,42 +119,17 @@ header {
 
 .tile[data-tile-status="wrong"] {
   border: none;
-  background-color: hsl(0 0% 20%);
+  background-color: hsl(0 0% 20% / var(--opacity, 1));
 }
 
 .tile[data-tile-status="wrong-position"] {
   border: none;
-  background-color: hsl(50 50% 45%);
+  background-color: hsl(50 50% 45% / var(--opacity, 1));
 }
 
 .tile[data-tile-status="correct"] {
   border: none;
-  background-color: hsl(110 30% 40%);
-}
-
-.tile.shake {
-  animation: shake 250ms ease-in-out;
-}
-
-@keyframes shake {
-  10% {
-    transform: translateX(-5%);
-  }
-  30% {
-    transform: translateX(5%);
-  }
-  50% {
-    transform: translateX(-7.5%);
-  }
-  70% {
-    transform: translateX(7.5%);
-  }
-  90% {
-    transform: translateX(-5%);
-  }
-  100% {
-    transform: translateX(0);
-  }
+  background-color: hsl(110 30% 40% / var(--opacity, 1));
 }
 
 .alerts {
@@ -178,6 +153,8 @@ header {
   animation: show-alert 1500ms;
 }
 
+/* ANIMATIONS */
+
 @keyframes show-alert {
   80% {
     opacity: 1;
@@ -186,4 +163,107 @@ header {
   100% {
     opacity: 0;
   }
+}
+
+.tile.shake {
+  animation: shake 250ms ease-in-out;
+}
+
+@keyframes shake {
+  10% {
+    transform: translateX(-5%);
+  }
+
+  30% {
+    transform: translateX(5%);
+  }
+
+  50% {
+    transform: translateX(-7.5%);
+  }
+
+  70% {
+    transform: translateX(7.5%);
+  }
+
+  90% {
+    transform: translateX(-5%);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* .tile.reveal {
+  --reveal-delay: 250ms;
+  --position: 0;
+  --opacity: 0;
+  animation: reveal 2000ms ease-in-out calc(var(--reveal-delay) * var(--position)) forwards;
+}
+
+@keyframes reveal {
+  0% {
+    border: .05em solid #606060;
+  }
+  50% {
+    --opacity: 1;
+    transform: scaleY(0);
+    border: none;
+  }
+
+  100% {
+    transform: scaleY(1);
+    border: none;
+  }
+} */
+
+:nth-child(1 of .tile.reveal) {
+  background-color: transparent;
+  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
+}
+
+:nth-child(2 of .tile.reveal) {
+  background-color: transparent;
+  --reveal-delay: 250ms;
+  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
+}
+
+:nth-child(3 of .tile.reveal) {
+  background-color: transparent;
+  --reveal-delay: 500ms;
+  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
+}
+
+:nth-child(4 of .tile.reveal) {
+  background-color: transparent;
+  --reveal-delay: 750ms;
+  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
+}
+
+:nth-child(5 of .tile.reveal) {
+  background-color: transparent;
+  --reveal-delay: 1000ms;
+  animation: reveal 2000ms ease-in-out var(--reveal-delay, 0ms) forwards;
+}
+
+@keyframes reveal {
+  0% {
+    border: .05em solid #606060;
+  }
+
+  50% {
+    background-color: inherit;
+    transform: scaleY(0);
+    border: none;
+  }
+
+  100% {
+    transform: scaleY(1);
+    border: none;
+  }
+}
+
+.tile.dance {
+  animation: dance 500ms ease-in-out;
 }
