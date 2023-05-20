@@ -5,6 +5,7 @@ import AlertContainer from "./components/AlertContainer";
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, ANSWER, dictionary, WORD_LENGTH, ROWS} from './util/data';
+import { validateTiles } from './util/logic';
 
 console.log("answer: ", ANSWER);
 
@@ -47,7 +48,7 @@ function App() {
           return tile;
         });
       });
-      //animation end and restoreUserInteration is handled in event listener on tile element
+      //restoreUserInteration is handled in onAnimationEnd listener on tile element
     }, [stopUserInteraction]);
 
   const addLetter = useCallback(
@@ -106,53 +107,6 @@ function App() {
       return;
     }
 
-    //define validateTiles func:
-    const validateTiles = (currentBoard = board) => {
-      //let letterCheck = ANSWER;
-      return currentBoard.map((tile, i, a) => {
-        if (tile.status !== STATUS.active) return tile;
-        let status;
-        const regExp = new RegExp(tile.value, "gi");
-        const matchingLetters = [...ANSWER.matchAll(regExp)];
-        if (matchingLetters.length <= 1) {
-          status = STATUS.wrong;
-          if (matchingLetters.length) {
-            const letterIndex = matchingLetters[0].index;
-            if (letterIndex === i % WORD_LENGTH) status = STATUS.correct;
-            //to stop the first yellow showing letter if the 2nd placement of the same letter is in the correct place and the anwser word only contains that letter once:
-            //ex. answer: 'smote', user submits: 'tests'. the first t should have status wrong, the 2nd t should have status correct.
-            const indexOffset = letterIndex - (i % WORD_LENGTH);
-            if (
-              letterIndex !== i % WORD_LENGTH &&
-              a[i + indexOffset]?.value !== tile.value
-            ) {
-              const lettersInSubmittedWord = [
-                ...currentWord.matchAll(regExp),
-              ];
-              if (lettersInSubmittedWord.length === 1)
-                status = STATUS.wrongPosition;
-              //get smallest index position out of word that matches the letter.
-              const indexToColor = lettersInSubmittedWord.reduce(
-                (index, letter) => {
-                  if (index >= letter.index) return letter.index;
-                  return index;
-                },
-                WORD_LENGTH
-              );
-              if (i % WORD_LENGTH === indexToColor)
-                status = STATUS.wrongPosition;
-            }
-          }
-        } else {
-          status = STATUS.wrongPosition;
-          matchingLetters.forEach((letter) => {
-            if (letter.index === i % WORD_LENGTH) status = STATUS.correct;
-          });
-        }
-        return { ...tile, status };
-      });
-    };
-
     //check if submitted word is the answer - set win on each tile.
     if (currentWord === ANSWER) {
       setResult((currentResult) => ({
@@ -170,7 +124,7 @@ function App() {
 
     addAnimation(ANIMATION.reveal);
     setBoard((currentBoard) => {
-      const newBoard = validateTiles(currentBoard);
+      const newBoard = validateTiles(currentBoard, currentWord);
       setKeyboard((currentKeyboard) => {
         //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
         const keyStatuses = newBoard.reduce((array, tile) => {
@@ -200,7 +154,7 @@ function App() {
     });
 
     return;
-  }, [currentWord, board, sendAlert, addAnimation]);
+  }, [currentWord, sendAlert, addAnimation]);
 
   const handleInput = useCallback(
     (input) => {
