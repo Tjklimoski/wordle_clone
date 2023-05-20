@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Key from './components/Key';
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} from './util/data';
 
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
@@ -20,12 +19,12 @@ function App() {
     })
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
-  const [alerts, sendAlert] = useAlert();
   const [result, setResult] = useState({
     win: false,
     lose: false,
     playAnimation: false,
   });
+  const [alerts, sendAlert] = useAlert();
   // To allow animations to finish before allowing users to interact again
   const [stopUserInteraction, restoreUserInteraction] = useStopProp([
     "click",
@@ -47,13 +46,10 @@ function App() {
         });
       });
       //animation end and restoreUserInteration is handled in event listener on tile element
-    },
-    [stopUserInteraction]
-  );
+    }, [stopUserInteraction]);
 
-  const addLetter = useCallback(
-    (letter) => {
-      //only tiles that are in the process of being guessed will have an 'active' status. once guess is submitted they will turn to wrong, wrong-position or correct
+  const addLetter = useCallback((letter) => {
+      //only tiles in the process of being guessed will have an 'active' status.
       if (activeTiles.length >= WORD_LENGTH) {
         return;
       }
@@ -67,9 +63,7 @@ function App() {
           return { ...tile, value: letter, status: STATUS.active };
         });
       });
-    },
-    [activeTiles]
-  );
+    }, [activeTiles]);
 
   const deleteLetter = useCallback(() => {
     const tileToDeleteIndex = activeTiles.length - 1;
@@ -232,7 +226,7 @@ function App() {
     };
   }, [handleInput]);
 
-  // lose condition
+  // check if lose
   useEffect(() => {
     if (
       !board.some(
@@ -308,21 +302,9 @@ function App() {
       </div>
 
       <div className="keyboard">
-        {keyboard.map(({ value, status }) => (
-          <button
-            key={value}
-            className="key"
-            data-value={value}
-            data-key-status={status}
-            onClick={(e) => handleInput(e.currentTarget.dataset.value)}
-          >
-            {value.toLowerCase() === "delete" ? (
-              <FontAwesomeIcon icon={faDeleteLeft} />
-            ) : (
-              value
-            )}
-          </button>
-        ))}
+        {keyboard.map((key) => {
+          return <Key key={key.value} {...key} handleInput={handleInput} />;
+        })}
       </div>
     </div>
   );
@@ -330,10 +312,6 @@ function App() {
 
 export default App
 
-//create custom hook for useAnimation, and useWordle - returns the board, keyboard, and handleInput, and useDebounce hook?
+//create custom hook for useAnimation, useDebounce, and useWordle - returns the board, keyboard, and handleInput?
 
 //move onAnimationEnd to document event listner? Should these event listeners be moved out of react completly and handled in a JS file??
-
-//change flip tile animation to tranisition?
-
-//user interation doesn't return when enter is pressed and no letters are on the line.
