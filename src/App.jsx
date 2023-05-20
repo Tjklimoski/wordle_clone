@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Keyboard from './components/Keyboard';
-import Tile from './components/Tile'
+import Tile from './components/Tile';
+import Alert from './components/Alert';
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} from './util/data';
@@ -249,22 +250,7 @@ function App() {
         <h1>NOTWORDLE</h1>
       </header>
       <div className="alerts">
-        {alerts.map((alert) => {
-          return (
-            <div
-              className="alert"
-              key={alert.id}
-              // prevent default fade out animation behavior if win or lose alert
-              style={
-                alert.message === ALERT.lose || alert.message === ALERT.win
-                  ? { animation: "none" }
-                  : {}
-              }
-            >
-              {alert.message}
-            </div>
-          );
-        })}
+        {alerts.map(({ id, message }) => <Alert key={id} message={message} /> )}
       </div>
       <div
         className="board"
