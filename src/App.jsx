@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import useStopProp from './useStopProp';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { nanoid } from 'nanoid';
@@ -20,11 +21,20 @@ function App() {
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
   const [alerts, setAlerts] = useState([]);
-  const [result, setResult] = useState({ win: false, lose: false, playAnimation: false });
+  const [result, setResult] = useState({
+    win: false,
+    lose: false,
+    playAnimation: false,
+  });
+  // To allow animations to finish before allowing users to interact again
+  const [stopUserInteraction, restoreUserInteraction] = useStopProp([
+    "click",
+    "keydown",
+  ]);
   const debounce = useRef(null);
   const activeTiles = board.filter((tile) => tile.status === STATUS.active);
 
-  console.log('board top level: ', board);
+  console.log("board top level: ", board);
 
   const sendAlert = useCallback((alert, duration = 1500) => {
     setAlerts((currentAlerts) => [alert, ...currentAlerts]);
@@ -36,32 +46,20 @@ function App() {
     }, duration);
   }, []);
 
-  // To allow animations to finish before allowing users to interact again
-  const stopProp = useCallback((e) => {
-    e.stopPropagation();
-  }, []);
-
-  const stopUserInteraction = useCallback(() => {
-    document.addEventListener("click", stopProp, { capture: true });
-    document.addEventListener("keydown", stopProp, { capture: true });
-  }, [stopProp]);
-
-  const restoreUserInteraction = useCallback(() => {
-    document.removeEventListener("click", stopProp, { capture: true });
-    document.removeEventListener("keydown", stopProp, { capture: true });
-  }, [stopProp]);
-
   const addAnimation = useCallback(
     (animation) => {
       stopUserInteraction();
       setBoard((currentBoard) => {
         return currentBoard.map((tile) => {
-          if (tile.status === STATUS.active || tile.win === true) return { ...tile, animation };
+          if (tile.status === STATUS.active || tile.win === true)
+            return { ...tile, animation };
           return tile;
         });
       });
       //animation end and restoreUserInteration is handled in event listener on tile element
-    }, [stopUserInteraction]);
+    },
+    [stopUserInteraction]
+  );
 
   const addLetter = useCallback(
     (letter) => {
@@ -79,7 +77,9 @@ function App() {
           return { ...tile, value: letter, status: STATUS.active };
         });
       });
-    }, [activeTiles]);
+    },
+    [activeTiles]
+  );
 
   const deleteLetter = useCallback(() => {
     const tileToDeleteIndex = activeTiles.length - 1;
@@ -92,7 +92,11 @@ function App() {
           index % WORD_LENGTH === tileToDeleteIndex &&
           tile.status === STATUS.active
         )
-          return { value: null, status: STATUS.default, animation: ANIMATION.none };
+          return {
+            value: null,
+            status: STATUS.default,
+            animation: ANIMATION.none,
+          };
         return tile;
       });
     });
@@ -165,7 +169,11 @@ function App() {
 
     //check if submitted word is the answer - set win on each tile.
     if (submittedWord === ANSWER) {
-      setResult( currentResult => ({...currentResult, win: true, playAnimation: true }));
+      setResult((currentResult) => ({
+        ...currentResult,
+        win: true,
+        playAnimation: true,
+      }));
       setBoard((currentBoard) => {
         return currentBoard.map((tile) => {
           if (tile.status === STATUS.active) return { ...tile, win: true };
@@ -215,7 +223,9 @@ function App() {
       if (input === "enter") return submitWord();
       if (/^[a-z]$/.test(input)) return addLetter(input);
       return;
-    }, [addLetter, deleteLetter, submitWord]);
+    },
+    [addLetter, deleteLetter, submitWord]
+  );
 
   // setup keydown event listener
   useEffect(() => {
@@ -240,7 +250,7 @@ function App() {
       !result.win &&
       !result.lose
     ) {
-      setResult(currentResult => ({...currentResult, lose: true}));
+      setResult((currentResult) => ({ ...currentResult, lose: true }));
       sendAlert({ id: nanoid(), message: ALERT.lose }, null);
       stopUserInteraction();
     }
@@ -258,7 +268,11 @@ function App() {
               className="alert"
               key={alert.id}
               // prevent default fade out animation behavior if win or lose alert
-              style={ alert.message === ALERT.lose || alert.message === ALERT.win ? {animation: 'none'} : {}}
+              style={
+                alert.message === ALERT.lose || alert.message === ALERT.win
+                  ? { animation: "none" }
+                  : {}
+              }
             >
               {alert.message}
             </div>
@@ -282,7 +296,10 @@ function App() {
             if (result.playAnimation) {
               addAnimation(ANIMATION.dance);
               sendAlert({ id: nanoid(), message: ALERT.win }, null);
-              setResult((currentResult) => ({ ...currentResult, playAnimation: false }));
+              setResult((currentResult) => ({
+                ...currentResult,
+                playAnimation: false,
+              }));
             }
           }, delay);
         }}
