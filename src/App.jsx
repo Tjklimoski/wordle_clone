@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { nanoid } from 'nanoid';
-import { STATUS, ANIMATIONS, defaultKeyboard, anwserWords, dictionary} from './util/data';
+import { STATUS, ANIMATIONS, ALERTS, defaultKeyboard, anwserWords, dictionary} from './util/data';
 
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
 const WORD_LENGTH = 5;
@@ -20,7 +20,7 @@ function App() {
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
   const [alerts, setAlerts] = useState([]);
-  const [isWin, setIsWin] = useState({ win: false, playAnimation: false });
+  const [result, setResult] = useState({ win: false, lose: false, playAnimation: false });
   const debounce = useRef(null);
   const activeTiles = board.filter((tile) => tile.status === STATUS.active);
 
@@ -104,7 +104,7 @@ function App() {
 
   const submitWord = useCallback(() => {
     if (activeTiles.length !== WORD_LENGTH) {
-      sendAlert({ id: nanoid(), message: "Not enough letters" });
+      sendAlert({ id: nanoid(), message: ALERTS.short });
       addAnimation(ANIMATIONS.shake);
       return;
     }
@@ -115,7 +115,7 @@ function App() {
 
     //check if word is in dictionary
     if (!dictionary.includes(submittedWord)) {
-      sendAlert({ id: nanoid(), message: "Not a valid word" });
+      sendAlert({ id: nanoid(), message: ALERTS.invalid });
       addAnimation(ANIMATIONS.shake);
       return;
     }
@@ -169,7 +169,7 @@ function App() {
 
     //check if submitted word is the answer - set win on each tile.
     if (submittedWord === ANSWER) {
-      setIsWin({ win: true, playAnimation: true });
+      setResult( currentResult => ({...currentResult, win: true, playAnimation: true }));
       setBoard((currentBoard) => {
         return currentBoard.map((tile) => {
           if (tile.status === STATUS.active) return { ...tile, win: true };
@@ -238,11 +238,19 @@ function App() {
 
   // lose condition
   useEffect(() => {
-    if (!board.some(tile => tile.status === STATUS.default || tile.status === STATUS.active) && !isWin.win) {
-      sendAlert({ id: nanoid(), message: "You lose" }, null);
+    if (
+      !board.some(
+        (tile) =>
+          tile.status === STATUS.default || tile.status === STATUS.active
+      ) &&
+      !result.win &&
+      !result.lose
+    ) {
+      setResult(currentResult => ({...currentResult, lose: true}));
+      sendAlert({ id: nanoid(), message: ALERTS.lose }, null);
       stopUserInteraction();
     }
-  }, [board, isWin, sendAlert, stopUserInteraction]);
+  }, [board, result, sendAlert, stopUserInteraction]);
 
   return (
     <div className="wrapper">
@@ -252,7 +260,12 @@ function App() {
       <div className="alerts">
         {alerts.map((alert) => {
           return (
-            <div data-alert className="alert" key={alert.id}>
+            <div
+              className="alert"
+              key={alert.id}
+              // prevent default fade out animation behavior if win or lose alert
+              style={ alert.message === ALERTS.lose || alert.message === ALERTS.win ? {animation: 'none'} : {}}
+            >
               {alert.message}
             </div>
           );
@@ -271,11 +284,11 @@ function App() {
                 return tile;
               });
             });
-            if (!isWin.win) restoreUserInteraction();
-            if (isWin.playAnimation) {
+            if (!result.win && !result.lose) restoreUserInteraction();
+            if (result.playAnimation) {
               addAnimation(ANIMATIONS.dance);
-              sendAlert({ id: nanoid(), message: "You win!" }, 5000);
-              setIsWin((current) => ({ ...current, playAnimation: false }));
+              sendAlert({ id: nanoid(), message: ALERTS.win }, null);
+              setResult((currentResult) => ({ ...currentResult, playAnimation: false }));
             }
           }, delay);
         }}

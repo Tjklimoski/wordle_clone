@@ -13,6 +13,13 @@ const ANIMATIONS = {
   dance: 'dance'
 }
 
+const ALERTS = {
+  short: 'Not enough letters',
+  invalid: 'Not a valid word',
+  win: 'You win!',
+  lose: 'You lose',
+}
+
 const defaultKeyboard = [
   { value: "q", status: STATUS.default },
   { value: "w", status: STATUS.default },
@@ -15337,4 +15344,4 @@ const dictionary = [
   "shave"
 ];
 
-export { STATUS, ANIMATIONS, defaultKeyboard, anwserWords, dictionary };
+export { STATUS, ANIMATIONS, ALERTS, defaultKeyboard, anwserWords, dictionary };
