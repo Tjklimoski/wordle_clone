@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import Key from './components/Key';
+import Keyboard from './components/Keyboard';
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} from './util/data';
@@ -301,11 +301,7 @@ function App() {
         ))}
       </div>
 
-      <div className="keyboard">
-        {keyboard.map((key) => {
-          return <Key key={key.value} {...key} handleInput={handleInput} />;
-        })}
-      </div>
+      <Keyboard keyboard={keyboard} handleInput={handleInput}/>
     </div>
   );
 }

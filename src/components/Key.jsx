@@ -18,7 +18,7 @@ export default function Key({value, status, handleInput }) {
 }
 
 Key.propTypes = {
-  value: PropTypes.string,
-  status: PropTypes.string,
-  handleInput: PropTypes.func
+  value: PropTypes.string.isRequired,
+  status: PropTypes.string.isRequired,
+  handleInput: PropTypes.func.isRequired
 }
