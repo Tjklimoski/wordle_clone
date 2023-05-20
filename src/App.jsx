@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Keyboard from './components/Keyboard';
+import Tile from './components/Tile'
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} from './util/data';
@@ -279,7 +280,8 @@ function App() {
               });
             });
             if (!result.win && !result.lose) restoreUserInteraction();
-            if (result.playAnimation) {
+            //needs to be in onAnimationEnd to prevent overwriting reveal animation
+            if (result.win && result.playAnimation) {
               addAnimation(ANIMATION.dance);
               sendAlert(ALERT.win, null);
               setResult((currentResult) => ({
@@ -290,14 +292,8 @@ function App() {
           }, delay);
         }}
       >
-        {board.map(({ value, status, animation }, index) => (
-          <div
-            key={index}
-            data-tile-status={status}
-            className={`tile${animation ? " " + animation : ""}`}
-          >
-            {value}
-          </div>
+        {board.map((tile, index) => (
+          <Tile key={index} {...tile} />
         ))}
       </div>
 
