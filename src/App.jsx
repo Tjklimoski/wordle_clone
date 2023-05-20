@@ -5,6 +5,7 @@ import AlertContainer from "./components/AlertContainer";
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
 import useDebounce from './hooks/useDebounce';
+import useAnimation from './hooks/useAnimation';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, ANSWER, dictionary, WORD_LENGTH, ROWS} from './util/data';
 import { validateTiles } from './util/logic';
 
@@ -31,6 +32,7 @@ function App() {
     "keydown",
   ]);
   const debounce = useDebounce();
+  const [addAnimation, animationEnd] = useAnimation();
 
   const currentWord = board
     .filter((tile) => tile.status === STATUS.active)
@@ -39,20 +41,6 @@ function App() {
     }, "");
 
   console.log("board top level: ", board);
-
-  const addAnimation = useCallback(
-    (animation) => {
-      stopUserInteraction();
-      setBoard((currentBoard) => {
-        return currentBoard.map((tile) => {
-          if (tile.status === STATUS.active || tile.win === true)
-            return { ...tile, animation };
-          return tile;
-        });
-      });
-      //restoreUserInteration is handled in onAnimationEnd listener on tile element
-    },
-  [stopUserInteraction]);
 
   const addLetter = useCallback(
     (letter) => {
@@ -98,15 +86,23 @@ function App() {
     // check if all tiles in row are filled
     if (currentWord.length !== WORD_LENGTH) {
       sendAlert(ALERT.short);
-      // prevent animation if there are no tiles to animate
-      if (currentWord.length !== 0) addAnimation(ANIMATION.shake);
+      if (currentWord.length === 0) return;
+      addAnimation(
+        ANIMATION.shake,
+        setBoard,
+        board.filter((tile) => tile.status === STATUS.active)
+      );
       return;
     }
 
     //check if word is in dictionary
     if (!dictionary.includes(currentWord)) {
       sendAlert(ALERT.invalid);
-      addAnimation(ANIMATION.shake);
+      addAnimation(
+        ANIMATION.shake,
+        setBoard,
+        board.filter((tile) => tile.status === STATUS.active)
+      );
       return;
     }
 
@@ -125,7 +121,11 @@ function App() {
       });
     }
 
-    addAnimation(ANIMATION.reveal);
+    addAnimation(
+      ANIMATION.reveal,
+      setBoard,
+      board.filter((tile) => tile.status === STATUS.active)
+    );
     setBoard((currentBoard) => {
       const newBoard = validateTiles(currentBoard, currentWord);
       setKeyboard((currentKeyboard) => {
@@ -156,8 +156,23 @@ function App() {
       return newBoard;
     });
 
+    // //check if submitted word is the answer - set win on each tile.
+    // if (currentWord === ANSWER) {
+    //   setResult((currentResult) => ({
+    //     ...currentResult,
+    //     win: true,
+    //     playAnimation: true,
+    //   }));
+    //   setBoard((currentBoard) => {
+    //     return currentBoard.map((tile) => {
+    //       if (tile.status === STATUS.active) return { ...tile, win: true };
+    //       return tile;
+    //     });
+    //   });
+    // }
+
     return;
-  }, [currentWord, sendAlert, addAnimation]);
+  }, [board, currentWord, sendAlert, addAnimation]);
 
   const handleInput = useCallback(
     (input) => {
@@ -207,25 +222,24 @@ function App() {
       <div
         className="board"
         onAnimationEnd={() => {
-          debounce(() => {
-            setBoard((currentBoard) => {
-              return currentBoard.map((tile) => {
-                if (tile.animation)
-                  return { ...tile, animation: null };
-                return tile;
-              });
-            });
-            //needs to be in onAnimationEnd to prevent overwriting reveal animation
-            if (result.win && result.playAnimation) {
-              addAnimation(ANIMATION.dance);
-              sendAlert(ALERT.win, null);
-              setResult((currentResult) => ({
-                ...currentResult,
-                playAnimation: false,
-              }));
+          animationEnd(
+            setBoard,
+            result.win || result.lose,
+            () => {
+              if (result.win && result.playAnimation) {
+                addAnimation(
+                  ANIMATION.dance,
+                  setBoard,
+                  board.filter((tile) => tile.win === true)
+                );
+                sendAlert(ALERT.win, null);
+                setResult((currentResult) => ({
+                  ...currentResult,
+                  playAnimation: false,
+                }));
+              }
             }
-            if (!result.win && !result.lose) restoreUserInteraction();
-          });
+          );
         }}
       >
         {board.map((tile, index) => (

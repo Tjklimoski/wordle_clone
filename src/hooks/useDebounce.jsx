@@ -4,7 +4,7 @@ export default function useDebounce() {
 
   const timeout = useRef(null);
 
-  function debounce(cb, delay = 225) {
+  function debounce(cb, delay = 500) {
     clearTimeout(timeout.current);
     timeout.current = setTimeout(() => {
       cb?.();
