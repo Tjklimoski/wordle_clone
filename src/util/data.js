@@ -7,7 +7,6 @@ const STATUS = {
 }
 
 const ANIMATION = {
-  none: '',
   shake: 'shake',
   reveal: 'reveal',
   dance: 'dance'

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Keyboard from './components/Keyboard';
 import Tile from './components/Tile';
 import AlertContainer from "./components/AlertContainer";
@@ -15,7 +15,7 @@ function App() {
     Array(WORD_LENGTH * ROWS).fill({
       value: null,
       status: STATUS.default,
-      animation: ANIMATION.none,
+      animation: null,
     })
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
@@ -51,7 +51,8 @@ function App() {
         });
       });
       //restoreUserInteration is handled in onAnimationEnd listener on tile element
-    }, [stopUserInteraction]);
+    },
+  [stopUserInteraction]);
 
   const addLetter = useCallback(
     (letter) => {
@@ -86,7 +87,7 @@ function App() {
           return {
             value: null,
             status: STATUS.default,
-            animation: ANIMATION.none,
+            animation: null,
           };
         return tile;
       });
@@ -209,12 +210,11 @@ function App() {
           debounce(() => {
             setBoard((currentBoard) => {
               return currentBoard.map((tile) => {
-                if (tile.animation !== ANIMATION.none)
-                  return { ...tile, animation: ANIMATION.none };
+                if (tile.animation)
+                  return { ...tile, animation: null };
                 return tile;
               });
             });
-            if (!result.win && !result.lose) restoreUserInteraction();
             //needs to be in onAnimationEnd to prevent overwriting reveal animation
             if (result.win && result.playAnimation) {
               addAnimation(ANIMATION.dance);
@@ -224,6 +224,7 @@ function App() {
                 playAnimation: false,
               }));
             }
+            if (!result.win && !result.lose) restoreUserInteraction();
           });
         }}
       >
