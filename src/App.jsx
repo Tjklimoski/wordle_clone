@@ -29,6 +29,8 @@ function App() {
   const sendAlert = useCallback((alert, duration = 1500) => {
     setAlerts((currentAlerts) => [alert, ...currentAlerts]);
     //remove the alert from alerts state after specified time
+    // if (duration === null) return;
+    if (duration == null) return;
     setTimeout(() => {
       setAlerts((currentAlerts) => [...currentAlerts.slice(0, -1)]);
     }, duration);
@@ -234,14 +236,31 @@ function App() {
     };
   }, [handleInput]);
 
+  // lose condition
+  useEffect(() => {
+    if (!board.some(tile => tile.status === STATUS.default || tile.status === STATUS.active) && !isWin.win) {
+      sendAlert({ id: nanoid(), message: "You lose" }, null);
+      stopUserInteraction();
+    }
+  }, [board, isWin, sendAlert, stopUserInteraction]);
+
   return (
     <div className="wrapper">
       <header>
         <h1>NOTWORDLE</h1>
       </header>
+      <div className="alerts">
+        {alerts.map((alert) => {
+          return (
+            <div data-alert className="alert" key={alert.id}>
+              {alert.message}
+            </div>
+          );
+        })}
+      </div>
       <div
         className="board"
-        onAnimationEnd={() => {
+        onAnimationEnd={(e) => {
           const delay = 150;
           clearTimeout(debounce.current);
           debounce.current = setTimeout(() => {
@@ -261,15 +280,6 @@ function App() {
           }, delay);
         }}
       >
-        <div className="alerts">
-          {alerts.map((alert) => {
-            return (
-              <div className="alert" key={alert.id}>
-                {alert.message}
-              </div>
-            );
-          })}
-        </div>
         {board.map(({ value, status, animation }, index) => (
           <div
             key={index}
