@@ -6,14 +6,14 @@ const STATUS = {
   active: 'active'
 }
 
-const ANIMATIONS = {
+const ANIMATION = {
   none: '',
   shake: 'shake',
   reveal: 'reveal',
   dance: 'dance'
 }
 
-const ALERTS = {
+const ALERT = {
   short: 'Not enough letters',
   invalid: 'Not a valid word',
   win: 'You win!',
@@ -15344,4 +15344,4 @@ const dictionary = [
   "shave"
 ];
 
-export { STATUS, ANIMATIONS, ALERTS, defaultKeyboard, anwserWords, dictionary };
+export { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary };

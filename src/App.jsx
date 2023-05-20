@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { nanoid } from 'nanoid';
-import { STATUS, ANIMATIONS, ALERTS, defaultKeyboard, anwserWords, dictionary} from './util/data';
+import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} from './util/data';
 
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
 const WORD_LENGTH = 5;
@@ -15,7 +15,7 @@ function App() {
     Array(WORD_LENGTH * ROWS).fill({
       value: null,
       status: STATUS.default,
-      animation: ANIMATIONS.none,
+      animation: ANIMATION.none,
     })
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
@@ -61,9 +61,7 @@ function App() {
         });
       });
       //animation end and restoreUserInteration is handled in event listener on tile element
-    },
-    [stopUserInteraction]
-  );
+    }, [stopUserInteraction]);
 
   const addLetter = useCallback(
     (letter) => {
@@ -81,9 +79,7 @@ function App() {
           return { ...tile, value: letter, status: STATUS.active };
         });
       });
-    },
-    [activeTiles]
-  );
+    }, [activeTiles]);
 
   const deleteLetter = useCallback(() => {
     const tileToDeleteIndex = activeTiles.length - 1;
@@ -96,7 +92,7 @@ function App() {
           index % WORD_LENGTH === tileToDeleteIndex &&
           tile.status === STATUS.active
         )
-          return { value: null, status: STATUS.default, animation: ANIMATIONS.none };
+          return { value: null, status: STATUS.default, animation: ANIMATION.none };
         return tile;
       });
     });
@@ -104,8 +100,8 @@ function App() {
 
   const submitWord = useCallback(() => {
     if (activeTiles.length !== WORD_LENGTH) {
-      sendAlert({ id: nanoid(), message: ALERTS.short });
-      addAnimation(ANIMATIONS.shake);
+      sendAlert({ id: nanoid(), message: ALERT.short });
+      addAnimation(ANIMATION.shake);
       return;
     }
 
@@ -115,8 +111,8 @@ function App() {
 
     //check if word is in dictionary
     if (!dictionary.includes(submittedWord)) {
-      sendAlert({ id: nanoid(), message: ALERTS.invalid });
-      addAnimation(ANIMATIONS.shake);
+      sendAlert({ id: nanoid(), message: ALERT.invalid });
+      addAnimation(ANIMATION.shake);
       return;
     }
 
@@ -178,7 +174,7 @@ function App() {
       });
     }
 
-    addAnimation(ANIMATIONS.reveal);
+    addAnimation(ANIMATION.reveal);
     setBoard((currentBoard) => {
       const newBoard = validateTiles(currentBoard);
       setKeyboard((currentKeyboard) => {
@@ -219,9 +215,7 @@ function App() {
       if (input === "enter") return submitWord();
       if (/^[a-z]$/.test(input)) return addLetter(input);
       return;
-    },
-    [addLetter, deleteLetter, submitWord]
-  );
+    }, [addLetter, deleteLetter, submitWord]);
 
   // setup keydown event listener
   useEffect(() => {
@@ -247,7 +241,7 @@ function App() {
       !result.lose
     ) {
       setResult(currentResult => ({...currentResult, lose: true}));
-      sendAlert({ id: nanoid(), message: ALERTS.lose }, null);
+      sendAlert({ id: nanoid(), message: ALERT.lose }, null);
       stopUserInteraction();
     }
   }, [board, result, sendAlert, stopUserInteraction]);
@@ -264,7 +258,7 @@ function App() {
               className="alert"
               key={alert.id}
               // prevent default fade out animation behavior if win or lose alert
-              style={ alert.message === ALERTS.lose || alert.message === ALERTS.win ? {animation: 'none'} : {}}
+              style={ alert.message === ALERT.lose || alert.message === ALERT.win ? {animation: 'none'} : {}}
             >
               {alert.message}
             </div>
@@ -273,21 +267,21 @@ function App() {
       </div>
       <div
         className="board"
-        onAnimationEnd={(e) => {
+        onAnimationEnd={() => {
           const delay = 150;
           clearTimeout(debounce.current);
           debounce.current = setTimeout(() => {
             setBoard((currentBoard) => {
               return currentBoard.map((tile) => {
-                if (tile.animation !== ANIMATIONS.none)
-                  return { ...tile, animation: ANIMATIONS.none };
+                if (tile.animation !== ANIMATION.none)
+                  return { ...tile, animation: ANIMATION.none };
                 return tile;
               });
             });
             if (!result.win && !result.lose) restoreUserInteraction();
             if (result.playAnimation) {
-              addAnimation(ANIMATIONS.dance);
-              sendAlert({ id: nanoid(), message: ALERTS.win }, null);
+              addAnimation(ANIMATION.dance);
+              sendAlert({ id: nanoid(), message: ALERT.win }, null);
               setResult((currentResult) => ({ ...currentResult, playAnimation: false }));
             }
           }, delay);
@@ -327,10 +321,8 @@ function App() {
 
 export default App
 
-//create custom hook for useAnimation, useAlert, and useWordle?
+//create custom hook for useAnimation (or should this be useStopProp), useAlert - - returns the alert elements?, and useWordle - returns the board, keyboard, and handleInput.
 
-//move onAnimationEnd to document event listner? Should these event listeners be moved out of react completly?
+//move onAnimationEnd to document event listner? Should these event listeners be moved out of react completly and handled in a JS file??
 
 //change flip tile animation to tranisition?
-
-//add lose state
