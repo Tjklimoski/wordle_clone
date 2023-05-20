@@ -4,6 +4,7 @@ import Tile from './components/Tile';
 import AlertContainer from "./components/AlertContainer";
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
+import useDebounce from './hooks/useDebounce';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, ANSWER, dictionary, WORD_LENGTH, ROWS} from './util/data';
 import { validateTiles } from './util/logic';
 
@@ -29,7 +30,8 @@ function App() {
     "click",
     "keydown",
   ]);
-  const debounce = useRef(null);
+  const debounce = useDebounce();
+
   const currentWord = board
     .filter((tile) => tile.status === STATUS.active)
     .reduce((word, tile) => {
@@ -192,7 +194,6 @@ function App() {
     ) {
       setResult((currentResult) => ({ ...currentResult, lose: true }));
       sendAlert(ALERT.lose, null);
-      stopUserInteraction();
     }
   }, [board, result, sendAlert, stopUserInteraction]);
 
@@ -205,9 +206,7 @@ function App() {
       <div
         className="board"
         onAnimationEnd={() => {
-          const delay = 150;
-          clearTimeout(debounce.current);
-          debounce.current = setTimeout(() => {
+          debounce(() => {
             setBoard((currentBoard) => {
               return currentBoard.map((tile) => {
                 if (tile.animation !== ANIMATION.none)
@@ -225,7 +224,7 @@ function App() {
                 playAnimation: false,
               }));
             }
-          }, delay);
+          });
         }}
       >
         {board.map((tile, index) => (

@@ -1,7 +1,6 @@
 import { STATUS, ANSWER, WORD_LENGTH} from "./data";
 
 export function validateTiles(currentBoard, currentWord) {
-  console.log('LOGIC.JS currentWord: ', currentWord)
   return currentBoard.map((tile, i, a) => {
     if (tile.status !== STATUS.active) return tile;
     let status;
