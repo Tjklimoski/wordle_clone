@@ -201,23 +201,23 @@ header {
 .tile.reveal {
   border: .05em solid #606060;
   --opacity: 0;
-  animation: reveal 500ms ease-in-out var(--reveal-delay, 0ms) forwards;
+  animation: reveal 800ms ease-in-out var(--reveal-delay, 0ms) forwards;
 }
 
 :nth-child(2 of .tile.reveal) {
-  --reveal-delay: 100ms;
+  --reveal-delay: 160ms;
 }
 
 :nth-child(3 of .tile.reveal) {
-  --reveal-delay: 200ms;
+  --reveal-delay: 320ms;
 }
 
 :nth-child(4 of .tile.reveal) {
-  --reveal-delay: 300ms;
+  --reveal-delay: 480ms;
 }
 
 :nth-child(5 of .tile.reveal) {
-  --reveal-delay: 400ms;
+  --reveal-delay: 640ms;
 }
 
 @keyframes reveal {
