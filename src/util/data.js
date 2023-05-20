@@ -13,13 +13,6 @@ const ANIMATION = {
   dance: 'dance'
 }
 
-const ALERT = {
-  short: 'Not enough letters',
-  invalid: 'Not a valid word',
-  win: 'You win!',
-  lose: 'You lose',
-}
-
 const defaultKeyboard = [
   { value: "q", status: STATUS.default },
   { value: "w", status: STATUS.default },
@@ -51,6 +44,7 @@ const defaultKeyboard = [
   { value: "delete", status: STATUS.default },
 ];
 
+// answerWords are not exported
 const anwserWords = [
   "cigar",
   "rebut",
@@ -15344,4 +15338,26 @@ const dictionary = [
   "shave"
 ];
 
-export { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary };
+const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
+
+const ALERT = {
+  short: "Not enough letters",
+  invalid: "Not a valid word",
+  win: "You win!",
+  lose: `${ANSWER.toUpperCase()}`,
+};
+
+const WORD_LENGTH = 5;
+
+const ROWS = 6;
+
+export {
+  STATUS,
+  ANIMATION,
+  ALERT,
+  defaultKeyboard,
+  ANSWER,
+  dictionary,
+  WORD_LENGTH,
+  ROWS
+};

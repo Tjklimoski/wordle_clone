@@ -4,13 +4,7 @@ import Tile from './components/Tile';
 import AlertContainer from "./components/AlertContainer";
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
-import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} from './util/data';
-
-
-const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
-ALERT.lose = ANSWER.toUpperCase();
-const WORD_LENGTH = 5;
-const ROWS = 6;
+import { STATUS, ANIMATION, ALERT, defaultKeyboard, ANSWER, dictionary, WORD_LENGTH, ROWS} from './util/data';
 
 console.log("answer: ", ANSWER);
 
