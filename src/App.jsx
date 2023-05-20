@@ -105,6 +105,8 @@ function App() {
   const submitWord = useCallback(() => {
     if (activeTiles.length !== WORD_LENGTH) {
       sendAlert({ id: nanoid(), message: ALERT.short });
+      // prevent animation if there are no tiles to animate
+      if (activeTiles.length === 0) return;
       addAnimation(ANIMATION.shake);
       return;
     }
@@ -338,8 +340,10 @@ function App() {
 
 export default App
 
-//create custom hook for useAnimation (or should this be useStopProp), useAlert - - returns the alert elements?, and useWordle - returns the board, keyboard, and handleInput.
+//create custom hook for useAnimation, useAlert - returns the alert elements?, and useWordle - returns the board, keyboard, and handleInput, and useDebounce hook?
 
 //move onAnimationEnd to document event listner? Should these event listeners be moved out of react completly and handled in a JS file??
 
 //change flip tile animation to tranisition?
+
+//user interation doesn't return when enter is pressed and no letters are on the line.
