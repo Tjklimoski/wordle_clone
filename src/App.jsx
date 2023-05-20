@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import useStopProp from './useStopProp';
+import useStopProp from './hooks/useStopProp';
+import useAlert from './hooks/useAlert';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
-import { nanoid } from 'nanoid';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} from './util/data';
 
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
@@ -20,7 +20,7 @@ function App() {
     })
   );
   const [keyboard, setKeyboard] = useState(defaultKeyboard);
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, sendAlert] = useAlert();
   const [result, setResult] = useState({
     win: false,
     lose: false,
@@ -35,16 +35,6 @@ function App() {
   const activeTiles = board.filter((tile) => tile.status === STATUS.active);
 
   console.log("board top level: ", board);
-
-  const sendAlert = useCallback((alert, duration = 1500) => {
-    setAlerts((currentAlerts) => [alert, ...currentAlerts]);
-    //remove the alert from alerts state after specified time
-    // if (duration === null) return;
-    if (duration == null) return;
-    setTimeout(() => {
-      setAlerts((currentAlerts) => [...currentAlerts.slice(0, -1)]);
-    }, duration);
-  }, []);
 
   const addAnimation = useCallback(
     (animation) => {
@@ -104,7 +94,7 @@ function App() {
 
   const submitWord = useCallback(() => {
     if (activeTiles.length !== WORD_LENGTH) {
-      sendAlert({ id: nanoid(), message: ALERT.short });
+      sendAlert(ALERT.short);
       // prevent animation if there are no tiles to animate
       if (activeTiles.length === 0) return;
       addAnimation(ANIMATION.shake);
@@ -117,7 +107,7 @@ function App() {
 
     //check if word is in dictionary
     if (!dictionary.includes(submittedWord)) {
-      sendAlert({ id: nanoid(), message: ALERT.invalid });
+      sendAlert(ALERT.invalid);
       addAnimation(ANIMATION.shake);
       return;
     }
@@ -253,7 +243,7 @@ function App() {
       !result.lose
     ) {
       setResult((currentResult) => ({ ...currentResult, lose: true }));
-      sendAlert({ id: nanoid(), message: ALERT.lose }, null);
+      sendAlert(ALERT.lose, null);
       stopUserInteraction();
     }
   }, [board, result, sendAlert, stopUserInteraction]);
@@ -297,7 +287,7 @@ function App() {
             if (!result.win && !result.lose) restoreUserInteraction();
             if (result.playAnimation) {
               addAnimation(ANIMATION.dance);
-              sendAlert({ id: nanoid(), message: ALERT.win }, null);
+              sendAlert(ALERT.win, null);
               setResult((currentResult) => ({
                 ...currentResult,
                 playAnimation: false,
@@ -340,7 +330,7 @@ function App() {
 
 export default App
 
-//create custom hook for useAnimation, useAlert - returns the alert elements?, and useWordle - returns the board, keyboard, and handleInput, and useDebounce hook?
+//create custom hook for useAnimation, and useWordle - returns the board, keyboard, and handleInput, and useDebounce hook?
 
 //move onAnimationEnd to document event listner? Should these event listeners be moved out of react completly and handled in a JS file??
 
