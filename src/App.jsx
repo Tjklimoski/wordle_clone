@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Keyboard from './components/Keyboard';
 import Tile from './components/Tile';
-import Alert from './components/Alert';
+import AlertContainer from "./components/AlertContainer";
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} from './util/data';
+
 
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
 const WORD_LENGTH = 5;
@@ -249,9 +250,7 @@ function App() {
       <header>
         <h1>NOTWORDLE</h1>
       </header>
-      <div className="alerts">
-        {alerts.map(({ id, message }) => <Alert key={id} message={message} /> )}
-      </div>
+      <AlertContainer alerts={alerts} />
       <div
         className="board"
         onAnimationEnd={() => {
