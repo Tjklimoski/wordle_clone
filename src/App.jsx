@@ -8,6 +8,7 @@ import { STATUS, ANIMATION, ALERT, defaultKeyboard, anwserWords, dictionary} fro
 
 
 const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
+ALERT.lose = ANSWER.toUpperCase();
 const WORD_LENGTH = 5;
 const ROWS = 6;
 
@@ -34,7 +35,11 @@ function App() {
     "keydown",
   ]);
   const debounce = useRef(null);
-  const activeTiles = board.filter((tile) => tile.status === STATUS.active);
+  const currentWord = board
+    .filter((tile) => tile.status === STATUS.active)
+    .reduce((word, tile) => {
+      return (word += tile.value);
+    }, "");
 
   console.log("board top level: ", board);
 
@@ -51,9 +56,10 @@ function App() {
       //animation end and restoreUserInteration is handled in event listener on tile element
     }, [stopUserInteraction]);
 
-  const addLetter = useCallback((letter) => {
+  const addLetter = useCallback(
+    (letter) => {
       //only tiles in the process of being guessed will have an 'active' status.
-      if (activeTiles.length >= WORD_LENGTH) {
+      if (currentWord.length >= WORD_LENGTH) {
         return;
       }
 
@@ -66,18 +72,19 @@ function App() {
           return { ...tile, value: letter, status: STATUS.active };
         });
       });
-    }, [activeTiles]);
+    },
+    [currentWord]
+  );
 
   const deleteLetter = useCallback(() => {
-    const tileToDeleteIndex = activeTiles.length - 1;
+    const tileToDeleteIndex = currentWord.length - 1;
     if (tileToDeleteIndex < 0) return;
     setBoard((currentBoard) => {
       return currentBoard.map((tile, index) => {
         // if value used in multiple tiles get the one in the same index position
         if (
-          tile.value === activeTiles[tileToDeleteIndex].value &&
-          index % WORD_LENGTH === tileToDeleteIndex &&
-          tile.status === STATUS.active
+          tile.status === STATUS.active &&
+          index % WORD_LENGTH === tileToDeleteIndex
         )
           return {
             value: null,
@@ -87,23 +94,19 @@ function App() {
         return tile;
       });
     });
-  }, [activeTiles]);
+  }, [currentWord]);
 
   const submitWord = useCallback(() => {
-    if (activeTiles.length !== WORD_LENGTH) {
+    // check if all tiles in row are filled
+    if (currentWord.length !== WORD_LENGTH) {
       sendAlert(ALERT.short);
       // prevent animation if there are no tiles to animate
-      if (activeTiles.length === 0) return;
-      addAnimation(ANIMATION.shake);
+      if (currentWord.length !== 0) addAnimation(ANIMATION.shake);
       return;
     }
 
-    const submittedWord = activeTiles.reduce((word, tile) => {
-      return (word += tile.value);
-    }, "");
-
     //check if word is in dictionary
-    if (!dictionary.includes(submittedWord)) {
+    if (!dictionary.includes(currentWord)) {
       sendAlert(ALERT.invalid);
       addAnimation(ANIMATION.shake);
       return;
@@ -130,7 +133,7 @@ function App() {
               a[i + indexOffset]?.value !== tile.value
             ) {
               const lettersInSubmittedWord = [
-                ...submittedWord.matchAll(regExp),
+                ...currentWord.matchAll(regExp),
               ];
               if (lettersInSubmittedWord.length === 1)
                 status = STATUS.wrongPosition;
@@ -157,7 +160,7 @@ function App() {
     };
 
     //check if submitted word is the answer - set win on each tile.
-    if (submittedWord === ANSWER) {
+    if (currentWord === ANSWER) {
       setResult((currentResult) => ({
         ...currentResult,
         win: true,
@@ -203,7 +206,7 @@ function App() {
     });
 
     return;
-  }, [activeTiles, board, sendAlert, addAnimation]);
+  }, [currentWord, board, sendAlert, addAnimation]);
 
   const handleInput = useCallback(
     (input) => {
