@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Keyboard from './components/Keyboard';
 import Tile from './components/Tile';
 import AlertContainer from "./components/AlertContainer";
-import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
 import useAnimation from './hooks/useAnimation';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, ANSWER, dictionary, WORD_LENGTH, ROWS} from './util/data';
@@ -27,10 +26,6 @@ function App() {
   });
   const [alerts, sendAlert] = useAlert();
   // To allow animations to finish before allowing users to interact again
-  const [stopUserInteraction, restoreUserInteraction] = useStopProp([
-    "click",
-    "keydown",
-  ]);
   const [addAnimation, animationEnd] = useAnimation();
 
   const currentWord = board
