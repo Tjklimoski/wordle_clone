@@ -4,7 +4,6 @@ import Tile from './components/Tile';
 import AlertContainer from "./components/AlertContainer";
 import useStopProp from './hooks/useStopProp';
 import useAlert from './hooks/useAlert';
-import useDebounce from './hooks/useDebounce';
 import useAnimation from './hooks/useAnimation';
 import { STATUS, ANIMATION, ALERT, defaultKeyboard, ANSWER, dictionary, WORD_LENGTH, ROWS} from './util/data';
 import { validateTiles } from './util/logic';
@@ -24,6 +23,7 @@ function App() {
     win: false,
     lose: false,
     playAnimation: false,
+    showAlert: true
   });
   const [alerts, sendAlert] = useAlert();
   // To allow animations to finish before allowing users to interact again
@@ -31,7 +31,6 @@ function App() {
     "click",
     "keydown",
   ]);
-  const debounce = useDebounce();
   const [addAnimation, animationEnd] = useAnimation();
 
   const currentWord = board
@@ -106,12 +105,19 @@ function App() {
       return;
     }
 
+    // reveal tiles:
+
+    addAnimation(
+      ANIMATION.reveal,
+      setBoard,
+      board.filter((tile) => tile.status === STATUS.active)
+    );
+
     //check if submitted word is the answer - set win on each tile.
     if (currentWord === ANSWER) {
       setResult((currentResult) => ({
         ...currentResult,
-        win: true,
-        playAnimation: true,
+        win: true
       }));
       setBoard((currentBoard) => {
         return currentBoard.map((tile) => {
@@ -121,15 +127,10 @@ function App() {
       });
     }
 
-    addAnimation(
-      ANIMATION.reveal,
-      setBoard,
-      board.filter((tile) => tile.status === STATUS.active)
-    );
     setBoard((currentBoard) => {
       const newBoard = validateTiles(currentBoard, currentWord);
       setKeyboard((currentKeyboard) => {
-        //create array only containing the highlest level key status for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
+        //create array only containing the highest status level for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
         const keyStatuses = newBoard.reduce((array, tile) => {
           if (!array) return [tile];
           //don't add the tile if it's status is default
@@ -155,21 +156,6 @@ function App() {
       });
       return newBoard;
     });
-
-    // //check if submitted word is the answer - set win on each tile.
-    // if (currentWord === ANSWER) {
-    //   setResult((currentResult) => ({
-    //     ...currentResult,
-    //     win: true,
-    //     playAnimation: true,
-    //   }));
-    //   setBoard((currentBoard) => {
-    //     return currentBoard.map((tile) => {
-    //       if (tile.status === STATUS.active) return { ...tile, win: true };
-    //       return tile;
-    //     });
-    //   });
-    // }
 
     return;
   }, [board, currentWord, sendAlert, addAnimation]);
@@ -211,7 +197,23 @@ function App() {
       setResult((currentResult) => ({ ...currentResult, lose: true }));
       sendAlert(ALERT.lose, null);
     }
-  }, [board, result, sendAlert, stopUserInteraction]);
+  }, [board, result, sendAlert]);
+
+  //win check
+  useEffect(() => {
+    if (result.win && result.playAnimation && result.showAlert) {
+      addAnimation(
+        ANIMATION.dance,
+        setBoard,
+        board.filter((tile) => tile.win === true)
+      );
+      sendAlert(ALERT.win, null);
+      setResult((currentResult) => {
+        //to prevent the win animation + alert from playing again
+        return { ...currentResult, showAlert: false }
+      });
+    }
+  }, [result, addAnimation, board, sendAlert])
 
   return (
     <div className="wrapper">
@@ -222,24 +224,13 @@ function App() {
       <div
         className="board"
         onAnimationEnd={() => {
-          animationEnd(
-            setBoard,
-            result.win || result.lose,
-            () => {
-              if (result.win && result.playAnimation) {
-                addAnimation(
-                  ANIMATION.dance,
-                  setBoard,
-                  board.filter((tile) => tile.win === true)
-                );
-                sendAlert(ALERT.win, null);
-                setResult((currentResult) => ({
-                  ...currentResult,
-                  playAnimation: false,
-                }));
-              }
+          animationEnd(setBoard, result.win || result.lose, () => {
+            if (result.win && !result.playAnimation) {
+              setResult(currentResult => {
+                return {...currentResult, playAnimation: true}
+              })
             }
-          );
+          });
         }}
       >
         {board.map((tile, index) => (
@@ -254,6 +245,4 @@ function App() {
 
 export default App
 
-//create custom hook for useAnimation, useDebounce, and useWordle - returns the board, keyboard, and handleInput?
-
-//move onAnimationEnd to document event listner? Should these event listeners be moved out of react completly and handled in a JS file??
+//create custom hook for useAnimation, and useWordle - returns the board, keyboard, and handleInput?
