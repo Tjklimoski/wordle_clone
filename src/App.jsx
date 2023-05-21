@@ -12,5 +12,3 @@ function App() {
 }
 
 export default App
-
-//create custom hook for useWordle - returns the board, keyboard, and handleInput?

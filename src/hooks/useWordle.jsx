@@ -13,8 +13,6 @@ import {
   ROWS,
 } from "../util/data";
 
-console.log("answer: ", ANSWER);
-
 export default function useWordle() {
 
   const [board, setBoard] = useState(
@@ -40,8 +38,6 @@ export default function useWordle() {
     .reduce((word, tile) => {
       return (word += tile.value);
     }, "");
-
-  console.log("board top level: ", board);
 
   const addLetter = useCallback(
     (letter) => {
