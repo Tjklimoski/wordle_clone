@@ -127,22 +127,25 @@ function App() {
       setKeyboard((currentKeyboard) => {
         //create array only containing the highest status level for each letter on the board (to prevent a letter with both wrong-position and correct being displayed as wrong-position on the keyboard)
         const keyStatuses = newBoard.reduce((array, tile) => {
-          if (!array) return [tile];
           //don't add the tile if it's status is default
           if (tile.status === STATUS.default) return [...array];
-          if (!array.some((t) => t.value === tile.value))
+          if (!array.some((t) => t.value === tile.value)) {
             return [...array, tile];
-          return array.map((t) => {
-            if (t.value === tile.value) {
-              if (tile.status === STATUS.correct) return tile;
-              if (
-                tile.status === STATUS.wrongPosition &&
-                t.status !== STATUS.correct
-              )
-                return tile;
-            }
-            return t;
-          });
+          } else {
+            return array.map((t) => {
+              if (t.value === tile.value) {
+                if (tile.status === STATUS.correct) {
+                  return tile;
+                } else if (
+                  tile.status === STATUS.wrongPosition &&
+                  t.status !== STATUS.correct
+                ) {
+                  return tile;
+                }
+              }
+              return t;
+            });
+          }
         }, []);
 
         return currentKeyboard.map((key) => {
@@ -191,6 +194,7 @@ function App() {
     ) {
       setResult((currentResult) => ({ ...currentResult, lose: true }));
       sendAlert(ALERT.lose, null);
+      //result.lose set to true before final reveal animation, meaning stopUserInteraction will persist after losing alert.
     }
   }, [board, result, sendAlert]);
 

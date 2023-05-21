@@ -15337,9 +15337,7 @@ const dictionary = [
   "shave"
 ];
 
-// const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
-
-const ANSWER = "feels";
+const ANSWER = anwserWords[Math.floor(Math.random() * anwserWords.length)].toLowerCase();
 
 const ALERT = {
   short: "Not enough letters",
